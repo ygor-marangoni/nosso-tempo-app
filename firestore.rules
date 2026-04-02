@@ -1,0 +1,87 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function coupleDoc(coupleId) {
+      return get(/databases/$(database)/documents/couples/$(coupleId));
+    }
+
+    function isCoupleOwner(coupleId) {
+      return signedIn() && coupleDoc(coupleId).data.ownerUid == request.auth.uid;
+    }
+
+    function isCouplePartner(coupleId) {
+      return signedIn() && coupleDoc(coupleId).data.partnerUid == request.auth.uid;
+    }
+
+    function isCoupleMember(coupleId) {
+      return isCoupleOwner(coupleId)
+        || isCouplePartner(coupleId)
+        || exists(/databases/$(database)/documents/couples/$(coupleId)/members/$(request.auth.uid));
+    }
+
+    match /users/{uid} {
+      allow read, write: if isSelf(uid);
+    }
+
+    match /invites/{code} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.coupleId is string
+        && request.resource.data.createdByUid == request.auth.uid
+        && request.resource.data.used == false
+        && request.resource.data.usedAt == null
+        && request.resource.data.usedBy == null;
+      allow update: if signedIn()
+        && resource.data.used == false
+        && request.resource.data.coupleId == resource.data.coupleId
+        && request.resource.data.createdByUid == resource.data.createdByUid
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.used == true
+        && request.resource.data.usedBy == request.auth.uid
+        && request.resource.data.usedAt == request.time;
+      allow delete: if false;
+    }
+
+    match /couples/{coupleId} {
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow read: if isCoupleMember(coupleId);
+      allow update: if isCoupleOwner(coupleId)
+        || (
+          signedIn()
+          && resource.data.partnerUid == null
+          && request.resource.data.ownerUid == resource.data.ownerUid
+          && request.resource.data.partnerUid == request.auth.uid
+        );
+      allow delete: if false;
+
+      match /config/{configId} {
+        allow create, read, update: if isCoupleMember(coupleId) || isCoupleOwner(coupleId);
+        allow delete: if false;
+      }
+
+      match /members/{memberId} {
+        allow create: if isCoupleOwner(coupleId)
+          || (
+            signedIn()
+            && memberId == request.auth.uid
+            && coupleDoc(coupleId).data.partnerUid == request.auth.uid
+          );
+        allow read, update: if isCoupleMember(coupleId);
+        allow delete: if false;
+      }
+
+      match /{subcollection}/{docId} {
+        allow create, read, update, delete: if isCoupleMember(coupleId);
+      }
+    }
+  }
+}
