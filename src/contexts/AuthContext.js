@@ -27,17 +27,55 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, currentUser => {
-      setUser(getDemoSession() ? DEMO_USER : currentUser);
-      setLoading(false);
-    });
+    let isActive = true;
+    let resolved = false;
 
-    return unsubscribe;
+    const finishBootstrap = (nextUser, nextError = null) => {
+      if (!isActive || resolved) return;
+      resolved = true;
+      setUser(nextUser);
+      setAuthError(nextError);
+      setLoading(false);
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      const demoUser = getDemoSession() ? DEMO_USER : null;
+      finishBootstrap(
+        demoUser,
+        demoUser
+          ? null
+          : {
+              code: 'auth/bootstrap-timeout',
+              message: 'A inicialização do Firebase Auth demorou mais do que o esperado.',
+            },
+      );
+    }, 4500);
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      currentUser => {
+        window.clearTimeout(timeoutId);
+        finishBootstrap(getDemoSession() ? DEMO_USER : currentUser, null);
+      },
+      error => {
+        window.clearTimeout(timeoutId);
+        const demoUser = getDemoSession() ? DEMO_USER : null;
+        finishBootstrap(demoUser, error);
+      },
+    );
+
+    return () => {
+      isActive = false;
+      window.clearTimeout(timeoutId);
+      unsubscribe();
+    };
   }, []);
 
   async function signInWithGoogle() {
+    setAuthError(null);
     clearDemoSession();
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
@@ -47,6 +85,7 @@ export function AuthProvider({ children }) {
   }
 
   async function signInWithTestAccount() {
+    setAuthError(null);
     setDemoSession();
     setUser(DEMO_USER);
     setLoading(false);
@@ -54,6 +93,7 @@ export function AuthProvider({ children }) {
   }
 
   async function signInWithEmail(email, password) {
+    setAuthError(null);
     if (isDemoCredentials(email, password)) {
       return signInWithTestAccount();
     }
@@ -65,6 +105,7 @@ export function AuthProvider({ children }) {
   }
 
   async function signUpWithEmail(email, password) {
+    setAuthError(null);
     clearDemoSession();
     const credential = await createUserWithEmailAndPassword(auth, email, password);
 
@@ -89,11 +130,13 @@ export function AuthProvider({ children }) {
   }
 
   async function sendPasswordReset(email) {
+    setAuthError(null);
     return sendPasswordResetEmail(auth, email.trim());
   }
 
   async function signOut() {
     if (user?.isDemo) {
+      setAuthError(null);
       clearDemoSession();
       setUser(null);
       return;
@@ -107,6 +150,7 @@ export function AuthProvider({ children }) {
       value={{
         user,
         loading,
+        authError,
         signInWithGoogle,
         signInWithEmail,
         signInWithTestAccount,

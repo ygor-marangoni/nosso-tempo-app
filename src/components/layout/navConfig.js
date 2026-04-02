@@ -13,9 +13,9 @@ export const MAIN_NAV = [
   { href: '/app/home', label: 'Início', Icon: Home },
   { href: '/app/register', label: 'Registrar', Icon: Pencil },
   { href: '/app/history', label: 'Histórico', Icon: BookOpen },
-  { href: '/app/reports', label: 'Relatórios', Icon: BarChart3 },
   { href: '/app/album', label: 'Álbum', Icon: ImageIcon },
   { href: '/app/timeline', label: 'Linha do Tempo', Icon: Milestone },
+  { href: '/app/reports', label: 'Relatórios', Icon: BarChart3 },
   { href: '/app/settings', label: 'Ajustes', Icon: Settings },
 ];
 

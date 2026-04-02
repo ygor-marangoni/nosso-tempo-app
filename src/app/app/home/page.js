@@ -1,12 +1,18 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Copy, Heart, Image as ImageIcon, Pencil, Quote } from 'lucide-react';
+import { Copy, Heart, Pencil, Quote, Sparkles } from 'lucide-react';
 import { useCouple } from '@/contexts/CoupleContext';
 import { calcRelationshipTime } from '@/lib/dateUtils';
 import { inviteHref } from '@/lib/invite';
+
+const ShareRecapModal = dynamic(
+  () => import('@/components/share/ShareRecapModal'),
+  { ssr: false }
+);
 
 const SUB_PHRASES = [
   'que bom ter vocês aqui',
@@ -36,6 +42,7 @@ export default function HomePage() {
   const { couple, config, phrases, ensurePhrasesLoaded } = useCouple();
   const [time, setTime] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [showRecap, setShowRecap] = useState(false);
 
   const { name1 = '', name2 = '', startDate, couplePhotoUrl, inviteCode } = config;
   const stableSeed = `${couple?.id || inviteCode || 'nosso-tempo'}:${name1}:${name2}`;
@@ -176,11 +183,13 @@ export default function HomePage() {
           <Pencil size={15} />
           Registrar Momento
         </Link>
-        <Link href="/app/album" className="home-secondary-btn">
-          <ImageIcon size={14} />
-          Ver Álbum
-        </Link>
+        <button className="recap-trigger-btn" onClick={() => setShowRecap(true)}>
+          <Sparkles size={13} />
+          Recap do Mês
+        </button>
       </div>
+
+      {showRecap && <ShareRecapModal onClose={() => setShowRecap(false)} />}
     </div>
   );
 }

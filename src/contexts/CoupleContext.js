@@ -613,8 +613,10 @@ export function CoupleProvider({ children }) {
 
   async function saveCouplePhoto(file) {
     const uploaded = await uploadSingleImage(file, `couples/${coupleId}/photo/${Date.now()}`, {
-      maxWidth: 840,
-      quality: 0.8,
+      // 1440px garante que o recap (1350px de canvas em pixelRatio 5) nunca faça upscale.
+      // quality 0.93 preserva quase toda a fidelidade original com WebP eficiente.
+      maxWidth: 1920,
+      quality: 0.93,
     });
 
     if (isDemoMode) {

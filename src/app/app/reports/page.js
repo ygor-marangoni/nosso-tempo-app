@@ -1,12 +1,26 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
-import { BarChart3, Calendar, CalendarCheck, Clock, Flame, Star, Trophy, TrendingUp } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  BarChart3,
+  Calendar,
+  CalendarCheck,
+  Clock,
+  Flame,
+  Sparkles,
+  Star,
+  Trophy,
+  TrendingUp,
+} from 'lucide-react';
 import ReportsCharts from '@/components/reports/ReportsCharts';
 import { useCouple } from '@/contexts/CoupleContext';
 import { formatTime } from '@/lib/dateUtils';
 
-const WEEK_DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+const ShareRecapModal = dynamic(
+  () => import('@/components/share/ShareRecapModal'),
+  { ssr: false }
+);
 
 function toKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -14,6 +28,7 @@ function toKey(date) {
 
 export default function ReportsPage() {
   const { entries, entriesReady, ensureEntriesLoaded } = useCouple();
+  const [showRecap, setShowRecap] = useState(false);
 
   useEffect(() => {
     ensureEntriesLoaded();
@@ -25,36 +40,25 @@ export default function ReportsPage() {
     const now = new Date();
     now.setHours(12, 0, 0, 0);
 
-    // Total hours
-    const totalHours = entries.reduce((sum, e) => sum + e.hours, 0);
-
-    // Distinct dates
-    const distinctDates = [...new Set(entries.map(e => e.date))];
+    const totalHours = entries.reduce((sum, entry) => sum + entry.hours, 0);
+    const distinctDates = [...new Set(entries.map(entry => entry.date))];
     const totalDays = distinctDates.length;
-
-    // Average hours per session (days with entry)
     const avgPerSession = totalDays > 0 ? totalHours / totalDays : 0;
 
-    // Best single day
-    const byDate = entries.reduce((acc, e) => {
-      acc[e.date] = (acc[e.date] || 0) + e.hours;
+    const byDate = entries.reduce((acc, entry) => {
+      acc[entry.date] = (acc[entry.date] || 0) + entry.hours;
       return acc;
     }, {});
+
     const bestDayEntry = Object.entries(byDate).sort((a, b) => b[1] - a[1])[0];
     const bestDayHours = bestDayEntry?.[1] || 0;
     const bestDayLabel = bestDayEntry
-      ? new Date(`${bestDayEntry[0]}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+      ? new Date(`${bestDayEntry[0]}T12:00:00`).toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: 'short',
+        })
       : null;
 
-    // Best weekday
-    const dayTotals = entries.reduce((acc, e) => {
-      const idx = new Date(`${e.date}T12:00:00`).getDay();
-      acc[idx] = (acc[idx] || 0) + e.hours;
-      return acc;
-    }, {});
-    const bestDayIndex = Object.entries(dayTotals).sort((a, b) => b[1] - a[1])[0]?.[0];
-
-    // Current streak (fixed: don't penalise for today having no entry yet)
     const sortedDesc = [...distinctDates].sort().reverse();
     const todayKey = toKey(now);
 
@@ -63,25 +67,31 @@ export default function ReportsPage() {
     if (!distinctDates.includes(todayKey)) {
       cursor.setDate(cursor.getDate() - 1);
     }
+
     for (const date of sortedDesc) {
       if (date === toKey(cursor)) {
-        streak++;
+        streak += 1;
         cursor.setDate(cursor.getDate() - 1);
       } else if (date < toKey(cursor)) {
         break;
       }
     }
 
-    // Best streak (all-time)
     const sortedAsc = [...distinctDates].sort();
     let bestStreak = sortedAsc.length > 0 ? 1 : 0;
     let run = 1;
-    for (let i = 1; i < sortedAsc.length; i++) {
-      const prev = new Date(`${sortedAsc[i - 1]}T12:00:00`);
-      const curr = new Date(`${sortedAsc[i]}T12:00:00`);
+
+    for (let index = 1; index < sortedAsc.length; index += 1) {
+      const prev = new Date(`${sortedAsc[index - 1]}T12:00:00`);
+      const curr = new Date(`${sortedAsc[index]}T12:00:00`);
       const diff = Math.round((curr - prev) / 86_400_000);
-      if (diff === 1) { run++; if (run > bestStreak) bestStreak = run; }
-      else { run = 1; }
+
+      if (diff === 1) {
+        run += 1;
+        if (run > bestStreak) bestStreak = run;
+      } else {
+        run = 1;
+      }
     }
 
     return [
@@ -128,15 +138,34 @@ export default function ReportsPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1>Relatórios</h1>
-        <p>
-          <BarChart3 size={14} color="var(--rosa-400)" />
-          Visualize como vocês aproveitam o tempo juntos
-        </p>
+      <div
+        className="page-header"
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
+        <div>
+          <h1>Relatórios</h1>
+          <p>
+            <BarChart3 size={14} color="var(--rosa-400)" />
+            Visualize como vocês aproveitam o tempo juntos
+          </p>
+        </div>
+
+        <button
+          className="recap-trigger-btn recap-trigger-btn--reports"
+          onClick={() => setShowRecap(true)}
+          style={{ marginTop: 6 }}
+        >
+          <Sparkles size={14} />
+          Recap do Mês
+        </button>
       </div>
 
-      {/* Stats grid */}
       {hasData && (
         <div className="report-stats-grid">
           {stats.map(item => (
@@ -153,6 +182,8 @@ export default function ReportsPage() {
           ))}
         </div>
       )}
+
+      {showRecap && <ShareRecapModal onClose={() => setShowRecap(false)} />}
 
       {!entriesReady ? (
         <div className="empty-state" style={{ marginTop: 32 }}>
