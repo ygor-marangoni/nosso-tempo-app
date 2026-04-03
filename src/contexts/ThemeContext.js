@@ -1,58 +1,24 @@
 'use client';
 
-import { createContext, useContext, useEffect } from 'react';
-import { useCouple } from './CoupleContext';
+import { createContext, useContext, useEffect, useMemo } from 'react';
+import { useCoupleConfig } from './CoupleContext';
 
 const ThemeContext = createContext(null);
 
-const PALETTE_COLORS = {
-  rosa: '#ff7a9c',
-  lavanda: '#b56c8d',
-  azul: '#95597d',
-  sage: '#a96957',
-  pessego: '#df6652',
-  neutro: '#965f6f',
-};
-
-const FAVICON_SVG_PATH =
-  'M38.4092 24.6592C41.653 24.3713 44.464 25.8286 46.6738 28.1113C48.6744 30.1779 50.2008 32.9393 51.1504 35.7676C53.0034 32.2712 55.238 29.0879 58.5723 27.1016L58.5752 27.1006C61.7303 25.2533 65.4062 24.9011 68.793 26.1279H68.792C71.9533 27.2572 73.9008 29.5602 74.7939 32.3809C75.6833 35.1896 75.526 38.5005 74.5195 41.6875C71.0694 52.6127 61.3313 61.6824 52.6094 66.9727C53.2804 67.3358 53.9397 67.7181 54.5967 68.0908C55.2367 68.4539 55.8781 68.8096 56.54 69.1377L57.21 69.4561L57.2227 69.4619C57.9915 69.8451 58.774 70.1911 59.5664 70.5439C60.3558 70.8954 61.1535 71.2541 61.9375 71.6592C62.3421 71.8682 62.6784 72.1575 62.8652 72.5576C63.0538 72.9615 63.0661 73.4263 62.9209 73.9346C62.8031 74.3468 62.6387 74.6746 62.4189 74.915C62.1935 75.1614 61.9239 75.3003 61.6309 75.3525C61.0823 75.4501 60.4833 75.2347 59.9688 75.0166C59.6963 74.9353 59.185 74.7194 58.71 74.5078C58.197 74.2793 57.6803 74.0383 57.4414 73.9277L56.2939 73.3916C53.6909 72.1461 51.1534 70.7311 48.6914 69.1572L48.6445 69.1816C42.59 72.1618 35.9489 74.125 29.291 74.1592H29.2734C28.9075 74.1435 28.4449 74.1708 27.8887 74.1758C27.3569 74.1805 26.7672 74.163 26.2432 74.042C25.7222 73.9216 25.205 73.6847 24.8955 73.2041C24.582 72.7171 24.5396 72.0715 24.7656 71.2666L24.8164 71.1182C25.0999 70.4101 25.8546 70.2005 26.4736 70.1396C27.148 70.0734 27.9273 70.161 28.3076 70.1729H28.3066C34.1401 70.3542 39.4606 68.7864 44.916 66.5811C44.3082 66.1689 43.6488 65.6408 43.0068 65.0938C42.1281 64.345 41.2513 63.5369 40.5596 62.9229C36.4246 59.2521 32.2008 53.6322 29.9121 47.4971C27.623 41.3606 27.2531 34.6543 30.9268 28.8818C32.5809 26.2826 35.6527 24.9586 38.4023 24.6602L38.4092 24.6592ZM38.6641 28.5967C36.5467 28.9354 34.8749 29.6459 33.585 31.5586C31.9 34.0569 31.5196 38.0031 31.9863 41.041C33.5427 51.1717 40.8384 58.828 48.1963 64.1738C48.3482 64.2842 48.4826 64.3909 48.6299 64.4795C48.7395 64.5454 48.8238 64.5797 48.8857 64.5938C49.1387 64.4911 49.4849 64.2988 49.8584 64.0703C50.0592 63.9475 50.261 63.8195 50.4521 63.6982C50.6419 63.5779 50.8236 63.4619 50.9785 63.3682C55.6959 60.5147 61.5387 55.6685 65.0557 51.1064L65.0576 51.1025C68.3356 46.9451 71.8499 41.4186 71.7432 35.6875C71.6766 33.3451 70.6554 31.7359 69.2158 30.7305C67.7625 29.7156 65.8581 29.3009 64.0322 29.4189C61.5644 29.5787 59.4515 30.8895 57.6797 32.7949C55.9069 34.7015 54.4988 37.1792 53.4502 39.6084C53.3566 39.8252 53.2438 40.1375 53.1016 40.5117C52.9626 40.8774 52.8007 41.2895 52.6172 41.6768C52.4352 42.0606 52.2231 42.4407 51.9785 42.7324C51.7411 43.0155 51.4183 43.2802 51.0088 43.2969C50.4317 43.3203 49.995 43.0304 49.6768 42.6299C49.3671 42.2402 49.1457 41.7199 48.9717 41.1963C48.7964 40.6688 48.6575 40.0984 48.5303 39.5986C48.3994 39.0846 48.2846 38.6603 48.1562 38.375L48.1445 38.3477C47.2451 35.8471 46.1359 33.3436 44.6074 31.4961C43.0932 29.6658 41.1877 28.4995 38.6641 28.5967Z';
-
-function buildFaviconDataUrl(color) {
-  const svg = `<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="${FAVICON_SVG_PATH}" fill="${color}" stroke="${color}" stroke-width="0.753846"/></svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-}
-
-function applyFavicon(palette) {
-  const color = PALETTE_COLORS[palette] || PALETTE_COLORS.rosa;
-  const href = buildFaviconDataUrl(color);
-  const selectors = ['link[rel="icon"]', 'link[rel="shortcut icon"]', 'link[rel="apple-touch-icon"]'];
-  let found = false;
-  selectors.forEach(sel => {
-    document.querySelectorAll(sel).forEach(el => {
-      el.href = href;
-      found = true;
-    });
-  });
-  if (!found) {
-    const link = document.createElement('link');
-    link.rel = 'icon';
-    link.type = 'image/svg+xml';
-    link.href = href;
-    document.head.appendChild(link);
-  }
-}
-
 export function ThemeProvider({ children }) {
-  const { config } = useCouple();
+  const { config } = useCoupleConfig();
   const palette = config?.palette || 'rosa';
 
   useEffect(() => {
     document.documentElement.dataset.palette = palette;
-    try { localStorage.setItem('nt_palette', palette); } catch (_) {}
-    applyFavicon(palette);
+    try {
+      localStorage.setItem('nt_palette', palette);
+    } catch {}
   }, [palette]);
 
-  return <ThemeContext.Provider value={{ palette }}>{children}</ThemeContext.Provider>;
+  const value = useMemo(() => ({ palette }), [palette]);
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

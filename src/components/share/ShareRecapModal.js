@@ -4,24 +4,21 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Download, Image as ImageIcon, Share2, Sparkles, X } from 'lucide-react';
 import LayerPortal from '@/components/common/LayerPortal';
 import RecapCard from '@/components/share/RecapCard';
-import { useCouple } from '@/contexts/CoupleContext';
+import {
+  useCoupleAlbum,
+  useCoupleConfig,
+  useCoupleEntries,
+  useCouplePhrases,
+} from '@/contexts/CoupleContext';
 import { useToast } from '@/contexts/ToastContext';
 import { calcMonthRecap } from '@/lib/share/monthRecapUtils';
 import { captureCard, downloadPng, shareOrDownload, urlToDataUri } from '@/lib/share/exportUtils';
 
 export default function ShareRecapModal({ onClose }) {
-  const {
-    config,
-    entries,
-    entriesReady,
-    ensureEntriesLoaded,
-    album,
-    albumReady,
-    ensureAlbumLoaded,
-    phrases,
-    phrasesReady,
-    ensurePhrasesLoaded,
-  } = useCouple();
+  const { config } = useCoupleConfig();
+  const { entries, entriesReady, ensureEntriesLoaded } = useCoupleEntries();
+  const { album, albumReady, ensureAlbumLoaded } = useCoupleAlbum();
+  const { phrases, phrasesReady, ensurePhrasesLoaded } = useCouplePhrases();
   const { showToast } = useToast();
   const cardRef = useRef(null);
 
@@ -230,7 +227,7 @@ export default function ShareRecapModal({ onClose }) {
                     </span>
                   </label>
 
-                  {recap?.phrase && (
+                  {typeof recap?.phrase === 'string' && recap.phrase.trim() && (
                     <label className="recap-toggle">
                       <input
                         type="checkbox"

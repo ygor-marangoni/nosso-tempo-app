@@ -142,7 +142,9 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    return firebaseSignOut(auth);
+    await firebaseSignOut(auth);
+    setAuthError(null);
+    setUser(null);
   }
 
   return (

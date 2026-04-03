@@ -76,7 +76,8 @@ export function calcMonthRecap({ entries = [], album = [], phrases = [], config 
   }
 
   // Frase aleatória (usa a primeira disponível por estabilidade)
-  const phrase = (phrases || []).length > 0 ? phrases[0].text : null;
+  const phrase =
+    (phrases || []).find(item => typeof item?.text === 'string' && item.text.trim())?.text ?? null;
 
   return {
     year,

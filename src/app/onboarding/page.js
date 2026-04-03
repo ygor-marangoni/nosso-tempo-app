@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
@@ -16,22 +16,25 @@ import {
   User,
   X,
 } from 'lucide-react';
+import AuthBrandMark from '@/components/auth/AuthBrandMark';
 import { collection, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import DatePicker from '@/components/onboarding/DatePicker';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCouple } from '@/contexts/CoupleContext';
+import { useCoupleMeta } from '@/contexts/CoupleContext';
 import { ensureUserAccount } from '@/lib/account';
-import { db, storage } from '@/lib/firebase';
-import { createImageUploadMetadata, resizeImage } from '@/lib/imageUtils';
+import { buildCloudinaryDeliveryUrls, uploadCloudinaryImage } from '@/lib/cloudinary';
+import { db } from '@/lib/firebase';
+import { resizeImage } from '@/lib/imageUtils';
 import { createInvite, inviteHref } from '@/lib/invite';
 import {
   clearAuthFlow,
+  clearPendingCoupleSyncId,
   clearPendingInviteCode,
   getAuthFlow,
   getPendingInviteCode,
   normalizeInviteCode,
   setAuthFlow,
+  setPendingCoupleSyncId,
   setPendingInviteCode,
 } from '@/lib/session';
 import { PALETTE_OPTIONS } from '@/lib/tagConfig';
@@ -39,13 +42,6 @@ import { getPreferredUserName } from '@/lib/userName';
 
 const TOTAL_STEPS = 5;
 
-const STEP_LABELS = [
-  'Seu nome',
-  'Parceiro(a)',
-  'Data de início',
-  'Tema do casal',
-  'Foto de vocês',
-];
 
 const STEP_ICONS = [
   <User key="name" size={24} strokeWidth={1.6} />,
@@ -58,7 +54,7 @@ const STEP_ICONS = [
 export default function OnboardingPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { coupleId, coupleLoading } = useCouple();
+  const { coupleId, coupleLoading } = useCoupleMeta();
 
   const [mode, setMode] = useState('');
   const [step, setStep] = useState(1);
@@ -74,17 +70,30 @@ export default function OnboardingPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [origin, setOrigin] = useState('');
+  const [createdCoupleId, setCreatedCoupleId] = useState('');
+  const createdCoupleIdRef = useRef('');
+  const isCreatingSpaceFlowRef = useRef(false);
+  const showingFinishStep = Boolean((createdCoupleId || createdCoupleIdRef.current) && step === 6);
 
   useEffect(() => {
     if (authLoading || coupleLoading) return;
 
     if (!user) {
-      router.replace('/auth/login');
+      router.replace('/');
       return;
     }
 
     if (coupleId) {
+      const activeCreatedCoupleId = createdCoupleId || createdCoupleIdRef.current;
+
+      if (isCreatingSpaceFlowRef.current || (activeCreatedCoupleId && coupleId === activeCreatedCoupleId)) {
+        clearAuthFlow();
+        clearPendingInviteCode();
+        return;
+      }
+
       clearAuthFlow();
+      clearPendingCoupleSyncId();
       clearPendingInviteCode();
       router.replace('/app/home');
       return;
@@ -99,20 +108,15 @@ export default function OnboardingPage() {
     const flow = getAuthFlow();
     setMode(flow === 'create' ? 'create' : 'choice');
     setName1(current => current || getPreferredUserName(user, 'Você'));
-  }, [authLoading, coupleId, coupleLoading, router, user]);
+  }, [authLoading, coupleId, coupleLoading, createdCoupleId, router, user]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
-
-    const previousPalette = document.documentElement.dataset.palette;
-    if (mode === 'create') {
-      document.documentElement.dataset.palette = palette;
-    }
-
+    document.documentElement.dataset.palette = palette;
     return () => {
-      document.documentElement.dataset.palette = previousPalette || 'rosa';
+      document.documentElement.dataset.palette = 'rosa';
     };
-  }, [mode, palette]);
+  }, [palette]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -165,6 +169,7 @@ export default function OnboardingPage() {
 
     setSaving(true);
     setError('');
+    isCreatingSpaceFlowRef.current = true;
 
     try {
       const coupleRef = doc(collection(db, 'couples'));
@@ -176,20 +181,24 @@ export default function OnboardingPage() {
 
       if (photoFile) {
         const asset = await resizeImage(photoFile, 840);
-        couplePhotoPath = `couples/${nextCoupleId}/photo/profile.${asset.extension}`;
-        await uploadBytes(
-          ref(storage, couplePhotoPath),
-          asset.blob,
-          createImageUploadMetadata(asset.contentType),
-        );
-        couplePhotoUrl = await getDownloadURL(ref(storage, couplePhotoPath));
-        couplePhotoWidth = asset.width;
-        couplePhotoHeight = asset.height;
+        const uploaded = await uploadCloudinaryImage(asset.blob, {
+          context: {
+            app: 'nosso-tempo',
+            coupleId: nextCoupleId,
+          },
+          publicId: `couples/${nextCoupleId}/photo/profile`,
+          tags: ['nosso-tempo'],
+        });
+        const delivery = buildCloudinaryDeliveryUrls(uploaded.secure_url);
+        couplePhotoPath = uploaded.public_id;
+        couplePhotoUrl = delivery.url;
+        couplePhotoWidth = uploaded.width;
+        couplePhotoHeight = uploaded.height;
       }
 
       const ownerName = name1.trim();
       const partnerName = name2.trim();
-      const generatedInviteCode = await createInvite(nextCoupleId, user.uid);
+      const generatedInviteCode = await createInvite(nextCoupleId, user.uid, partnerName);
       const batch = writeBatch(db);
 
       batch.set(coupleRef, {
@@ -237,12 +246,15 @@ export default function OnboardingPage() {
       );
 
       await batch.commit();
-      await ensureUserAccount(user, { coupleId: nextCoupleId, name: ownerName, role: 'owner' });
-      clearAuthFlow();
-      clearPendingInviteCode();
+      createdCoupleIdRef.current = nextCoupleId;
+      setCreatedCoupleId(nextCoupleId);
       setInviteCode(generatedInviteCode);
       setStep(6);
+      clearAuthFlow();
+      clearPendingInviteCode();
+      void ensureUserAccount(user, { coupleId: nextCoupleId, name: ownerName, role: 'owner' }).catch(() => {});
     } catch (creationError) {
+      isCreatingSpaceFlowRef.current = false;
       console.error(creationError);
       setError('Não foi possível criar o espaço de vocês agora.');
     } finally {
@@ -257,6 +269,15 @@ export default function OnboardingPage() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  function accessCreatedSpace() {
+    isCreatingSpaceFlowRef.current = false;
+    if (createdCoupleId) {
+      setPendingCoupleSyncId(createdCoupleId);
+    }
+
+    router.replace('/app/home');
+  }
+
   if (!mode) {
     return null;
   }
@@ -265,32 +286,23 @@ export default function OnboardingPage() {
     return (
       <div className="ob-choice-wrap">
         <div className="ob-choice-brand">
-          <p
-            style={{
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              background: 'linear-gradient(135deg, var(--rosa-500), var(--rosa-600))',
-              backgroundClip: 'text',
-              fontFamily: 'var(--font-cursive), cursive',
-              fontSize: 32,
-              marginBottom: 4,
-            }}
-          >
-            Nosso Tempo
-          </p>
-          <p className="ob-choice-sub" style={{ margin: 0 }}>
-            Bem-vindo(a)! Como você quer começar?
-          </p>
+          <AuthBrandMark />
+          <h1 className="ob-choice-title">Bem-vindo(a)!</h1>
+          <p className="ob-choice-sub">Como você quer começar?</p>
         </div>
 
-        <div className="choice-grid" style={{ maxWidth: 640, width: '100%' }}>
-          <button className="choice-card" onClick={beginCreateFlow}>
-            <div className="choice-card-icon">
+        <div className="choice-grid">
+          <button className="choice-card choice-card--primary" onClick={beginCreateFlow}>
+            <div className="choice-card-icon choice-card-icon--primary">
               <PlusCircle size={22} />
             </div>
             <div className="choice-card-title">Criar Novo Espaço</div>
             <div className="choice-card-desc">
-              Comece o onboarding, escolha tema, nomes e gere o convite para o seu amor.
+              Personalize o tema, adicione os nomes do casal e gere o convite para o seu amor.
+            </div>
+            <div className="btn btn-primary choice-card-cta">
+              <Heart size={14} fill="#fff" stroke="#fff" />
+              Começar Agora
             </div>
           </button>
 
@@ -357,7 +369,7 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
-              <button className="btn btn-primary ob-finish-primary" onClick={() => router.push('/app/home')}>
+              <button className="btn btn-primary ob-finish-primary" onClick={accessCreatedSpace}>
                 Acessar Nosso Espaço
                 <ArrowRight size={16} />
               </button>

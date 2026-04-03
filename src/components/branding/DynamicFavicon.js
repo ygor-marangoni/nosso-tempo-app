@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { useCouple } from '@/contexts/CoupleContext';
+import { useCoupleConfig } from '@/contexts/CoupleContext';
 import { PALETTE_OPTIONS } from '@/lib/tagConfig';
 
 const FAVICON_PATH =
@@ -25,7 +25,7 @@ function ensureHeadLink(rel) {
 
 export default function DynamicFavicon() {
   const pathname = usePathname();
-  const { config } = useCouple();
+  const { config } = useCoupleConfig();
   const palette = config?.palette || 'rosa';
 
   const primaryColor = useMemo(() => {

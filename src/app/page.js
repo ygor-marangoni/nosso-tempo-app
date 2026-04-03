@@ -20,18 +20,23 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCouple } from '@/contexts/CoupleContext';
-import { getPendingInviteCode } from '@/lib/session';
+import { useCoupleMeta } from '@/contexts/CoupleContext';
+import { getPendingCoupleSyncId, getPendingInviteCode } from '@/lib/session';
 
 export default function LandingPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { coupleId, coupleLoading } = useCouple();
+  const { coupleId, coupleLoading } = useCoupleMeta();
   const [navScrolled, setNavScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (authLoading || coupleLoading || !user) return;
+    const forceLanding =
+      typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('landing') === '1';
+    const pendingCoupleSyncId = getPendingCoupleSyncId();
+
+    if (authLoading || coupleLoading || !user || forceLanding) return;
+    if (pendingCoupleSyncId && !coupleId) return;
     const pendingInvite = getPendingInviteCode();
     if (pendingInvite && !coupleId) {
       router.replace(`/invite/${pendingInvite}`);

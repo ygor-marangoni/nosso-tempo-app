@@ -1,18 +1,21 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, SendHorizonal } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { getFirebaseSetupMessage, isFirebaseSetupError } from '@/lib/firebaseErrors';
 import AuthShowcase from '@/components/auth/AuthShowcase';
 import AuthBrandMark from '@/components/auth/AuthBrandMark';
 
 export default function ForgotPasswordPage() {
-  const { sendPasswordReset } = useAuth();
+  const router = useRouter();
+  const { authError, sendPasswordReset } = useAuth();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const firebaseSetupMessage = isFirebaseSetupError(authError) ? getFirebaseSetupMessage(authError) : '';
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -33,6 +36,10 @@ export default function ForgotPasswordPage() {
     }
   }
 
+  function goToLogin() {
+    router.push('/auth/login');
+  }
+
   return (
     <div className="auth-split">
       <AuthShowcase />
@@ -46,24 +53,39 @@ export default function ForgotPasswordPage() {
               <div className="auth-sent-icon">
                 <Mail size={28} />
               </div>
+
               <h1 className="auth-split-title">Link enviado!</h1>
+
               <p className="auth-sent-desc">
-                Enviamos as instruções de recuperação para<br />
+                Enviamos as instruções de recuperação para
                 <strong>{email}</strong>
               </p>
+
               <p className="auth-sent-hint">
                 Não recebeu? Verifique a pasta de spam ou tente novamente.
               </p>
-              <button
-                className="auth-sent-retry"
-                onClick={() => { setSent(false); setEmail(''); }}
-              >
-                Tentar com outro e-mail
-              </button>
-              <Link href="/auth/login" className="auth-back-link" style={{ justifyContent: 'center', marginTop: 20 }}>
-                <ArrowLeft size={14} />
-                Voltar para o login
-              </Link>
+
+              <div className="auth-sent-actions">
+                <button
+                  type="button"
+                  className="auth-sent-retry"
+                  onClick={() => {
+                    setSent(false);
+                    setEmail('');
+                  }}
+                >
+                  Tentar com outro e-mail
+                </button>
+
+                <button
+                  type="button"
+                  className="auth-back-link auth-back-link--centered"
+                  onClick={goToLogin}
+                >
+                  <ArrowLeft size={14} />
+                  Voltar para o login
+                </button>
+              </div>
             </div>
           ) : (
             <>
@@ -71,6 +93,13 @@ export default function ForgotPasswordPage() {
               <p className="auth-forgot-desc">
                 Digite seu e-mail e enviaremos um link para você criar uma nova senha.
               </p>
+
+              {firebaseSetupMessage && (
+                <div className="auth-banner" style={{ marginBottom: '24px' }}>
+                  <strong>Firebase ainda não configurado</strong>
+                  <span>{firebaseSetupMessage}</span>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="auth-form">
                 <div className="auth-field">
@@ -81,16 +110,21 @@ export default function ForgotPasswordPage() {
                   <input
                     type="email"
                     value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="você@email.com"
+                    onChange={event => setEmail(event.target.value)}
+                    placeholder="voce@email.com"
                     required
                     autoFocus
+                    disabled={loading || Boolean(firebaseSetupMessage)}
                   />
                 </div>
 
                 {error && <p className="auth-error">{error}</p>}
 
-                <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
+                <button
+                  type="submit"
+                  className="btn btn-primary auth-submit"
+                  disabled={loading || Boolean(firebaseSetupMessage)}
+                >
                   {loading ? 'Enviando...' : (
                     <>
                       <SendHorizonal size={15} />
@@ -100,10 +134,15 @@ export default function ForgotPasswordPage() {
                 </button>
               </form>
 
-              <Link href="/auth/login" className="auth-back-link" style={{ justifyContent: 'center', marginTop: 24 }}>
+              <button
+                type="button"
+                className="auth-back-link auth-back-link--centered"
+                onClick={goToLogin}
+                style={{ marginTop: 24 }}
+              >
                 <ArrowLeft size={14} />
                 Voltar para o login
-              </Link>
+              </button>
             </>
           )}
         </div>

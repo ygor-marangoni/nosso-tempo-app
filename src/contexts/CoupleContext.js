@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import {
   addDoc,
   collection,
@@ -15,13 +15,19 @@ import {
   updateDoc,
   writeBatch,
 } from 'firebase/firestore';
-import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { buildImageVariant, buildResponsiveImageSet, createImageUploadMetadata } from '@/lib/imageUtils';
+import { buildImageVariant, buildResponsiveImageSet } from '@/lib/imageUtils';
+import { buildCloudinaryDeliveryUrls, destroyCloudinaryImage, uploadCloudinaryImage } from '@/lib/cloudinary';
 import { normalizeActivities, normalizeCustomTag, normalizeCustomTags } from '@/lib/tagConfig';
 import { getPreferredUserName } from '@/lib/userName';
 import { readDemoState, writeDemoState } from '@/lib/demoAccount';
 
 const CoupleContext = createContext(null);
+const CoupleMetaContext = createContext(null);
+const CoupleConfigContext = createContext(null);
+const CoupleEntriesContext = createContext(null);
+const CoupleAlbumContext = createContext(null);
+const CoupleTimelineContext = createContext(null);
+const CouplePhrasesContext = createContext(null);
 
 const DEFAULT_CONFIG = {
   palette: 'rosa',
@@ -46,10 +52,6 @@ function createLocalId(prefix) {
 
 function nowIso() {
   return new Date().toISOString();
-}
-
-function buildVariantPath(basePath, variant, extension) {
-  return `${basePath}-${variant}.${extension}`;
 }
 
 function normalizeEntryRecord(entry = {}) {
@@ -224,6 +226,7 @@ export function CoupleProvider({ children }) {
           return;
         }
 
+        setCoupleLoading(true);
         setCouple(null);
         setMembers([]);
         setConfig(DEFAULT_CONFIG);
@@ -234,7 +237,6 @@ export function CoupleProvider({ children }) {
         resetFeatureFlags();
         activeCoupleRef.current = nextCoupleId;
         attachCoupleListeners(nextCoupleId);
-        setCoupleLoading(false);
       },
       () => {
         setUserProfile({ id: user.uid });
@@ -253,23 +255,59 @@ export function CoupleProvider({ children }) {
 
   function attachCoupleListeners(nextCoupleId) {
     const register = unsub => baseCoupleUnsubsRef.current.push(unsub);
+    const initialReady = {
+      couple: false,
+      members: false,
+      config: false,
+    };
+
+    function markReady(key) {
+      initialReady[key] = true;
+      if (initialReady.couple && initialReady.members && initialReady.config) {
+        setCoupleLoading(false);
+      }
+    }
 
     register(
-      onSnapshot(doc(db, 'couples', nextCoupleId), snapshot => {
-        setCouple(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null);
-      }),
+      onSnapshot(
+        doc(db, 'couples', nextCoupleId),
+        snapshot => {
+          setCouple(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null);
+          markReady('couple');
+        },
+        () => {
+          setCouple(null);
+          markReady('couple');
+        },
+      ),
     );
 
     register(
-      onSnapshot(collection(db, 'couples', nextCoupleId, 'members'), snapshot => {
-        setMembers(sortMembers(snapshot.docs.map(item => ({ id: item.id, ...item.data() }))));
-      }),
+      onSnapshot(
+        collection(db, 'couples', nextCoupleId, 'members'),
+        snapshot => {
+          setMembers(sortMembers(snapshot.docs.map(item => ({ id: item.id, ...item.data() }))));
+          markReady('members');
+        },
+        () => {
+          setMembers([]);
+          markReady('members');
+        },
+      ),
     );
 
     register(
-      onSnapshot(doc(db, 'couples', nextCoupleId, 'config', nextCoupleId), snapshot => {
-        setConfig(snapshot.exists() ? normalizeConfigRecord(snapshot.data()) : DEFAULT_CONFIG);
-      }),
+      onSnapshot(
+        doc(db, 'couples', nextCoupleId, 'config', nextCoupleId),
+        snapshot => {
+          setConfig(snapshot.exists() ? normalizeConfigRecord(snapshot.data()) : DEFAULT_CONFIG);
+          markReady('config');
+        },
+        () => {
+          setConfig(DEFAULT_CONFIG);
+          markReady('config');
+        },
+      ),
     );
   }
 
@@ -332,6 +370,47 @@ export function CoupleProvider({ children }) {
     [members],
   );
 
+  const expectedCurrentMemberName = useMemo(() => {
+    if (!currentMember) return '';
+    if (currentMember.role === 'owner') return String(config.name1 || '').trim();
+    if (currentMember.role === 'partner') return String(config.name2 || '').trim();
+    return String(currentMember.name || '').trim();
+  }, [config.name1, config.name2, currentMember]);
+
+  useEffect(() => {
+    if (isDemoMode || !user?.uid || !coupleId || !currentMember?.id || !expectedCurrentMemberName) {
+      return;
+    }
+
+    const currentName = String(currentMember.name || '').trim();
+    const profileName = String(userProfile?.name || '').trim();
+
+    if (currentName === expectedCurrentMemberName && profileName === expectedCurrentMemberName) {
+      return;
+    }
+
+    void Promise.all([
+      setDoc(
+        doc(db, 'couples', coupleId, 'members', user.uid),
+        { name: expectedCurrentMemberName, updatedAt: serverTimestamp() },
+        { merge: true },
+      ),
+      setDoc(
+        doc(db, 'users', user.uid),
+        { name: expectedCurrentMemberName, updatedAt: serverTimestamp() },
+        { merge: true },
+      ),
+    ]).catch(() => {});
+  }, [
+    coupleId,
+    currentMember?.id,
+    currentMember?.name,
+    expectedCurrentMemberName,
+    isDemoMode,
+    user?.uid,
+    userProfile?.name,
+  ]);
+
   const isOwner = Boolean(user?.uid && couple?.ownerUid === user.uid);
 
   function actorMeta() {
@@ -352,16 +431,22 @@ export function CoupleProvider({ children }) {
     }
 
     const asset = await buildImageVariant(file, options);
-    const storagePath = `${basePath}.${asset.extension}`;
-    const storageRef = ref(storage, storagePath);
-    await uploadBytes(storageRef, asset.blob, createImageUploadMetadata(asset.contentType));
+    const uploaded = await uploadCloudinaryImage(asset.blob, {
+      context: {
+        app: 'nosso-tempo',
+        coupleId,
+      },
+      publicId: basePath,
+      tags: ['nosso-tempo'],
+    });
+    const delivery = buildCloudinaryDeliveryUrls(uploaded.secure_url);
 
     return {
       contentType: asset.contentType,
-      height: asset.height,
-      storagePath,
-      url: await getDownloadURL(storageRef),
-      width: asset.width,
+      height: uploaded.height,
+      storagePath: uploaded.public_id,
+      url: delivery.url,
+      width: uploaded.width,
     };
   }
 
@@ -380,33 +465,26 @@ export function CoupleProvider({ children }) {
     }
 
     const imageSet = await buildResponsiveImageSet(file, options);
-    const fullPath = buildVariantPath(basePath, 'full', imageSet.full.extension);
-    const thumbPath = imageSet.thumbIsSeparate
-      ? buildVariantPath(basePath, 'thumb', imageSet.thumb.extension)
-      : fullPath;
-    const fullRef = ref(storage, fullPath);
-    const thumbRef = imageSet.thumbIsSeparate ? ref(storage, thumbPath) : fullRef;
-
-    await Promise.all([
-      uploadBytes(fullRef, imageSet.full.blob, createImageUploadMetadata(imageSet.full.contentType)),
-      imageSet.thumbIsSeparate
-        ? uploadBytes(thumbRef, imageSet.thumb.blob, createImageUploadMetadata(imageSet.thumb.contentType))
-        : Promise.resolve(),
-    ]);
-
-    const [url, thumbUrl] = await Promise.all([
-      getDownloadURL(fullRef),
-      imageSet.thumbIsSeparate ? getDownloadURL(thumbRef) : Promise.resolve(''),
-    ]);
+    const uploaded = await uploadCloudinaryImage(imageSet.full.blob, {
+      context: {
+        app: 'nosso-tempo',
+        coupleId,
+      },
+      publicId: basePath,
+      tags: ['nosso-tempo'],
+    });
+    const delivery = buildCloudinaryDeliveryUrls(uploaded.secure_url, {
+      thumbWidth: imageSet.thumb.width,
+    });
 
     return {
       contentType: imageSet.full.contentType,
-      height: imageSet.full.height,
-      storagePath: fullPath,
-      thumbStoragePath: imageSet.thumbIsSeparate ? thumbPath : fullPath,
-      thumbUrl: imageSet.thumbIsSeparate ? thumbUrl : url,
-      url,
-      width: imageSet.full.width,
+      height: uploaded.height,
+      storagePath: uploaded.public_id,
+      thumbStoragePath: null,
+      thumbUrl: imageSet.thumbIsSeparate ? delivery.thumbUrl : delivery.url,
+      url: delivery.url,
+      width: uploaded.width,
     };
   }
 
@@ -420,7 +498,7 @@ export function CoupleProvider({ children }) {
         .filter(Boolean)
         .map(async path => {
           try {
-            await deleteObject(ref(storage, path));
+            await destroyCloudinaryImage(path);
           } catch {}
         }),
     );
@@ -944,6 +1022,80 @@ export function CoupleProvider({ children }) {
     );
   }
 
+  const metaValue = useMemo(
+    () => ({
+      coupleId,
+      couple,
+      coupleLoading,
+      userProfile,
+      members,
+      membersById,
+      currentMember,
+      partnerMember,
+      isOwner,
+      isDemoMode,
+    }),
+    [
+      coupleId,
+      couple,
+      coupleLoading,
+      userProfile,
+      members,
+      membersById,
+      currentMember,
+      partnerMember,
+      isOwner,
+      isDemoMode,
+    ],
+  );
+
+  const configValue = useMemo(
+    () => ({
+      config,
+    }),
+    [config],
+  );
+
+  const entriesValue = useMemo(
+    () => ({
+      entries,
+      entriesReady: featureReady.entries,
+      entriesLoading: featureLoading.entries,
+      ensureEntriesLoaded,
+    }),
+    [entries, featureReady.entries, featureLoading.entries, ensureEntriesLoaded],
+  );
+
+  const albumValue = useMemo(
+    () => ({
+      album,
+      albumReady: featureReady.album,
+      albumLoading: featureLoading.album,
+      ensureAlbumLoaded,
+    }),
+    [album, featureReady.album, featureLoading.album, ensureAlbumLoaded],
+  );
+
+  const timelineValue = useMemo(
+    () => ({
+      timeline,
+      timelineReady: featureReady.timeline,
+      timelineLoading: featureLoading.timeline,
+      ensureTimelineLoaded,
+    }),
+    [timeline, featureReady.timeline, featureLoading.timeline, ensureTimelineLoaded],
+  );
+
+  const phrasesValue = useMemo(
+    () => ({
+      phrases,
+      phrasesReady: featureReady.phrases,
+      phrasesLoading: featureLoading.phrases,
+      ensurePhrasesLoaded,
+    }),
+    [phrases, featureReady.phrases, featureLoading.phrases, ensurePhrasesLoaded],
+  );
+
   const value = {
     coupleId,
     couple,
@@ -991,11 +1143,57 @@ export function CoupleProvider({ children }) {
     clearCoupleData,
   };
 
-  return <CoupleContext.Provider value={value}>{children}</CoupleContext.Provider>;
+  return (
+    <CoupleContext.Provider value={value}>
+      <CoupleMetaContext.Provider value={metaValue}>
+        <CoupleConfigContext.Provider value={configValue}>
+          <CoupleEntriesContext.Provider value={entriesValue}>
+            <CoupleAlbumContext.Provider value={albumValue}>
+              <CoupleTimelineContext.Provider value={timelineValue}>
+                <CouplePhrasesContext.Provider value={phrasesValue}>
+                  {children}
+                </CouplePhrasesContext.Provider>
+              </CoupleTimelineContext.Provider>
+            </CoupleAlbumContext.Provider>
+          </CoupleEntriesContext.Provider>
+        </CoupleConfigContext.Provider>
+      </CoupleMetaContext.Provider>
+    </CoupleContext.Provider>
+  );
 }
 
 export function useCouple() {
   const context = useContext(CoupleContext);
   if (!context) throw new Error('useCouple must be used within CoupleProvider');
   return context;
+}
+
+function useRequiredContext(context, hookName) {
+  const value = useContext(context);
+  if (!value) throw new Error(`${hookName} must be used within CoupleProvider`);
+  return value;
+}
+
+export function useCoupleMeta() {
+  return useRequiredContext(CoupleMetaContext, 'useCoupleMeta');
+}
+
+export function useCoupleConfig() {
+  return useRequiredContext(CoupleConfigContext, 'useCoupleConfig');
+}
+
+export function useCoupleEntries() {
+  return useRequiredContext(CoupleEntriesContext, 'useCoupleEntries');
+}
+
+export function useCoupleAlbum() {
+  return useRequiredContext(CoupleAlbumContext, 'useCoupleAlbum');
+}
+
+export function useCoupleTimeline() {
+  return useRequiredContext(CoupleTimelineContext, 'useCoupleTimeline');
+}
+
+export function useCouplePhrases() {
+  return useRequiredContext(CouplePhrasesContext, 'useCouplePhrases');
 }

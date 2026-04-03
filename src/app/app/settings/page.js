@@ -29,6 +29,7 @@ import AppDatePicker from '@/components/common/AppDatePicker';
 import LucideIcon from '@/components/common/LucideIcon';
 import { auth } from '@/lib/firebase';
 import { inviteHref } from '@/lib/invite';
+import { clearAuthFlow, clearPendingInviteCode } from '@/lib/session';
 import { ICON_OPTIONS, PALETTE_OPTIONS } from '@/lib/tagConfig';
 
 export default function SettingsPage() {
@@ -40,6 +41,7 @@ export default function SettingsPage() {
     couple,
     currentMember,
     partnerMember,
+    userProfile,
     config,
     phrases,
     phrasesReady,
@@ -109,14 +111,31 @@ export default function SettingsPage() {
   }, []);
 
   const inviteLink = useMemo(() => inviteHref(config.inviteCode, origin), [config.inviteCode, origin]);
+  const ownerConfiguredName = String(config.name1 || '').trim();
+  const partnerConfiguredName = String(config.name2 || '').trim();
+  const viewerRole = currentMember?.role || (isOwner ? 'owner' : 'partner');
 
   useEffect(() => {
-    const selfName = isOwner ? config.name1 || currentMember?.name || '' : config.name2 || currentMember?.name || '';
-    const otherName = isOwner ? config.name2 || partnerMember?.name || '' : config.name1 || partnerMember?.name || '';
+    const selfName =
+      viewerRole === 'partner'
+        ? partnerConfiguredName || currentMember?.name || userProfile?.name || ''
+        : ownerConfiguredName || currentMember?.name || userProfile?.name || '';
+    const otherName =
+      viewerRole === 'partner'
+        ? ownerConfiguredName || partnerMember?.name || ''
+        : partnerConfiguredName || partnerMember?.name || '';
     setMyName(selfName);
     setPartnerName(otherName);
     setStartDate(config.startDate || '');
-  }, [config, currentMember?.name, isOwner, partnerMember?.name]);
+  }, [
+    config,
+    currentMember?.name,
+    partnerMember?.name,
+    partnerConfiguredName,
+    ownerConfiguredName,
+    userProfile?.name,
+    viewerRole,
+  ]);
 
   async function handleSaveNames() {
     const normalizedSelfName = myName.trim();
@@ -241,8 +260,10 @@ export default function SettingsPage() {
   }
 
   async function handleLogout() {
+    clearAuthFlow();
+    clearPendingInviteCode();
     await signOut();
-    router.push('/auth/login');
+    router.replace('/auth/login');
   }
 
   async function handleChangePassword() {
@@ -347,8 +368,25 @@ export default function SettingsPage() {
       .join('');
   }
 
-  const pendingPartnerName = isOwner ? config.name2 : config.name1;
-  const accountName = currentMember?.name || user?.displayName || 'Conta';
+  function resolveDisplayedMemberName(member) {
+    if (!member) return '';
+    if (member.role === 'owner') return config.name1 || member.name || '';
+    if (member.role === 'partner') return config.name2 || member.name || '';
+    return member.name || '';
+  }
+
+  const resolvedPartnerName =
+    currentMember?.role === 'partner'
+      ? ownerConfiguredName || partnerName.trim() || String(partnerMember?.name || '').trim() || 'Parceiro(a)'
+      : partnerConfiguredName || partnerName.trim() || String(partnerMember?.name || '').trim() || 'Parceiro(a)';
+  const accountName =
+    String(currentMember?.name || '').trim() ||
+    String(userProfile?.name || '').trim() ||
+    (viewerRole === 'partner' ? partnerConfiguredName : ownerConfiguredName) ||
+    myName.trim() ||
+    user?.displayName ||
+    'Conta';
+  const hasConnectedPartner = Boolean(couple?.partnerUid || partnerMember || members.length > 1);
   const providerId = user?.providerData?.[0]?.providerId || (user?.email ? 'password' : '');
   const isEmailPasswordAccount = providerId === 'password';
   const providerLabel = user?.isDemo
@@ -608,22 +646,22 @@ export default function SettingsPage() {
         <div className="members-list">
           {members.map(member => (
             <div className={`member-row${member.id === currentMember?.id ? ' current' : ''}`} key={member.id}>
-              <div className="member-avatar">{getInitials(member.name)}</div>
+              <div className="member-avatar">{getInitials(resolveDisplayedMemberName(member))}</div>
               <div className="member-main">
                 <div className="member-head">
-                  <strong>{member.name}</strong>
+                  <strong>{resolveDisplayedMemberName(member)}</strong>
                   {member.id === currentMember?.id && <span className="member-you">Você</span>}
                 </div>
                 <span>No mesmo espaço</span>
               </div>
             </div>
           ))}
-          {!couple?.partnerUid && (
+          {!hasConnectedPartner && (
             <div className="member-row pending">
-              <div className="member-avatar pending">{getInitials(pendingPartnerName)}</div>
+              <div className="member-avatar pending">{getInitials(resolvedPartnerName)}</div>
               <div className="member-main">
                 <div className="member-head">
-                  <strong>{pendingPartnerName}</strong>
+                  <strong>{resolvedPartnerName}</strong>
                 </div>
                 <span>Convite pendente</span>
               </div>

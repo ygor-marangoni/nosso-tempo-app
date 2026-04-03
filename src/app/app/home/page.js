@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Copy, Heart, Pencil, Quote, Sparkles } from 'lucide-react';
-import { useCouple } from '@/contexts/CoupleContext';
+import { useCoupleConfig, useCoupleMeta, useCouplePhrases } from '@/contexts/CoupleContext';
 import { calcRelationshipTime } from '@/lib/dateUtils';
 import { inviteHref } from '@/lib/invite';
 
@@ -39,7 +39,9 @@ function pickStableItem(items, seed) {
 
 export default function HomePage() {
   const router = useRouter();
-  const { couple, config, phrases, ensurePhrasesLoaded } = useCouple();
+  const { couple } = useCoupleMeta();
+  const { config } = useCoupleConfig();
+  const { phrases, ensurePhrasesLoaded } = useCouplePhrases();
   const [time, setTime] = useState(null);
   const [copied, setCopied] = useState(false);
   const [showRecap, setShowRecap] = useState(false);

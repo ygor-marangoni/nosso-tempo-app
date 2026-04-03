@@ -6,7 +6,6 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -16,6 +15,26 @@ const firebaseConfig = {
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId:             process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
+
+const firebaseEnvMap = {
+  NEXT_PUBLIC_FIREBASE_API_KEY: firebaseConfig.apiKey,
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: firebaseConfig.authDomain,
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: firebaseConfig.projectId,
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: firebaseConfig.storageBucket,
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: firebaseConfig.messagingSenderId,
+  NEXT_PUBLIC_FIREBASE_APP_ID: firebaseConfig.appId,
+};
+
+export const firebaseMissingEnv = Object.entries(firebaseEnvMap)
+  .filter(([, value]) => !value)
+  .map(([name]) => name);
+export const firebaseConfigReady = firebaseMissingEnv.length === 0;
+
+if (typeof window !== 'undefined' && !firebaseConfigReady) {
+  console.warn(
+    `[Nosso Tempo] Firebase incompleto. Variáveis ausentes: ${firebaseMissingEnv.join(', ')}`,
+  );
+}
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
@@ -38,5 +57,4 @@ function createFirestoreInstance() {
 }
 
 export const db      = createFirestoreInstance();
-export const storage = getStorage(app);
 export default app;

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 const couples = [
@@ -47,12 +48,12 @@ export default function AuthBrandMark() {
   }, [displayText, nameIndex, isDeleting]);
 
   return (
-    <div className="auth-brand-header">
+    <Link href="/?landing=1" className="auth-brand-header">
       <p className="auth-brand-title">Nosso Tempo</p>
       <span className="auth-brand-names">
         {displayText}
         <span className="auth-brand-cursor">|</span>
       </span>
-    </div>
+    </Link>
   );
 }

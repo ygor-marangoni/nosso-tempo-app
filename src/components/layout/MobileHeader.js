@@ -2,10 +2,10 @@
 
 import { memo, useMemo } from 'react';
 import { Heart } from 'lucide-react';
-import { useCouple } from '@/contexts/CoupleContext';
+import { useCoupleConfig } from '@/contexts/CoupleContext';
 
 function MobileHeader() {
-  const { config } = useCouple();
+  const { config } = useCoupleConfig();
   const { name1 = '', name2 = '' } = config;
 
   const firstName = useMemo(() => name1.trim(), [name1]);

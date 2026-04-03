@@ -1,16 +1,23 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCouple } from '@/contexts/CoupleContext';
+import {
+  useCoupleAlbum,
+  useCoupleConfig,
+  useCoupleEntries,
+  useCoupleMeta,
+  useCouplePhrases,
+  useCoupleTimeline,
+} from '@/contexts/CoupleContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import BottomNav from '@/components/layout/BottomNav';
 import HeartsBackground from '@/components/layout/HeartsBackground';
 import MobileHeader from '@/components/layout/MobileHeader';
 import Sidebar from '@/components/layout/Sidebar';
 import { APP_TITLES } from '@/components/layout/navConfig';
-import { getPendingInviteCode } from '@/lib/session';
+import { clearPendingCoupleSyncId, getPendingCoupleSyncId, getPendingInviteCode } from '@/lib/session';
 
 const APP_ROUTES = [
   '/app/home',
@@ -26,16 +33,33 @@ export default function AppLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
-  const {
-    coupleId,
-    coupleLoading,
-    config,
-    ensureAlbumLoaded,
-    ensureEntriesLoaded,
-    ensurePhrasesLoaded,
-    ensureTimelineLoaded,
-  } = useCouple();
+  const { coupleId, coupleLoading } = useCoupleMeta();
+  const { config } = useCoupleConfig();
+  const { ensureEntriesLoaded } = useCoupleEntries();
+  const { ensureAlbumLoaded } = useCoupleAlbum();
+  const { ensureTimelineLoaded } = useCoupleTimeline();
+  const { ensurePhrasesLoaded } = useCouplePhrases();
   const warmupStartedRef = useRef(false);
+  const [pendingCoupleSyncId, setPendingCoupleSyncId] = useState(() => getPendingCoupleSyncId());
+
+  useEffect(() => {
+    setPendingCoupleSyncId(getPendingCoupleSyncId());
+  }, [pathname, user?.uid]);
+
+  useEffect(() => {
+    if (!user) {
+      clearPendingCoupleSyncId();
+      setPendingCoupleSyncId('');
+      return;
+    }
+
+    if (coupleId && pendingCoupleSyncId) {
+      clearPendingCoupleSyncId();
+      setPendingCoupleSyncId('');
+    }
+  }, [coupleId, pendingCoupleSyncId, user]);
+
+  const waitingForCoupleSync = Boolean(user && pendingCoupleSyncId && !coupleId);
 
   useEffect(() => {
     const palette = config?.palette;
@@ -51,6 +75,10 @@ export default function AppLayout({ children }) {
     }
 
     if (!coupleId) {
+      if (pendingCoupleSyncId) {
+        return;
+      }
+
       const pendingInvite = getPendingInviteCode();
       if (pendingInvite) {
         router.replace(`/invite/${pendingInvite}`);
@@ -59,7 +87,7 @@ export default function AppLayout({ children }) {
 
       router.replace('/onboarding');
     }
-  }, [authLoading, coupleId, coupleLoading, router, user]);
+  }, [authLoading, coupleId, coupleLoading, pendingCoupleSyncId, router, user]);
 
   useEffect(() => {
     if (authLoading || coupleLoading || !user || !coupleId || warmupStartedRef.current) {
@@ -131,7 +159,7 @@ export default function AppLayout({ children }) {
     document.title = pageTitle ? `${pageTitle} | ${coupleNames}` : coupleNames;
   }, [config?.name1, config?.name2, pathname]);
 
-  if (authLoading || coupleLoading) {
+  if (authLoading || coupleLoading || waitingForCoupleSync) {
     return (
       <div id="loading-screen">
         <div className="loading-heart">

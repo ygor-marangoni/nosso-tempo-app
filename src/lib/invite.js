@@ -7,7 +7,7 @@ function generateCode() {
   return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-export async function createInvite(coupleId, createdByUid = null) {
+export async function createInvite(coupleId, createdByUid = null, partnerName = '') {
   for (let attempt = 0; attempt < 10; attempt += 1) {
     const code = generateCode();
     const inviteRef = doc(db, 'invites', code);
@@ -19,6 +19,7 @@ export async function createInvite(coupleId, createdByUid = null) {
       coupleId,
       createdAt: serverTimestamp(),
       createdByUid,
+      partnerName: String(partnerName || '').trim(),
       used: false,
       usedAt: null,
       usedBy: null,

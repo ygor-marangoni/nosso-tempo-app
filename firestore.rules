@@ -14,12 +14,24 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/couples/$(coupleId));
     }
 
+    function coupleDocAfter(coupleId) {
+      return getAfter(/databases/$(database)/documents/couples/$(coupleId));
+    }
+
     function isCoupleOwner(coupleId) {
       return signedIn() && coupleDoc(coupleId).data.ownerUid == request.auth.uid;
     }
 
+    function isCoupleOwnerAfter(coupleId) {
+      return signedIn() && coupleDocAfter(coupleId).data.ownerUid == request.auth.uid;
+    }
+
     function isCouplePartner(coupleId) {
       return signedIn() && coupleDoc(coupleId).data.partnerUid == request.auth.uid;
+    }
+
+    function isCouplePartnerAfter(coupleId) {
+      return signedIn() && coupleDocAfter(coupleId).data.partnerUid == request.auth.uid;
     }
 
     function isCoupleMember(coupleId) {
@@ -64,12 +76,21 @@ service cloud.firestore {
       allow delete: if false;
 
       match /config/{configId} {
-        allow create, read, update: if isCoupleMember(coupleId) || isCoupleOwner(coupleId);
+        allow create: if isCoupleMember(coupleId)
+          || isCoupleOwner(coupleId)
+          || isCoupleOwnerAfter(coupleId)
+          || isCouplePartnerAfter(coupleId);
+        allow read, update: if isCoupleMember(coupleId) || isCoupleOwner(coupleId);
         allow delete: if false;
       }
 
       match /members/{memberId} {
         allow create: if isCoupleOwner(coupleId)
+          || (
+            signedIn()
+            && memberId == request.auth.uid
+            && isCoupleOwnerAfter(coupleId)
+          )
           || (
             signedIn()
             && memberId == request.auth.uid

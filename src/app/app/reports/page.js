@@ -13,9 +13,22 @@ import {
   Trophy,
   TrendingUp,
 } from 'lucide-react';
-import ReportsCharts from '@/components/reports/ReportsCharts';
-import { useCouple } from '@/contexts/CoupleContext';
+import { useCoupleEntries } from '@/contexts/CoupleContext';
 import { formatTime } from '@/lib/dateUtils';
+
+const ReportsCharts = dynamic(
+  () => import('@/components/reports/ReportsCharts'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="empty-state" style={{ marginTop: 32 }}>
+        <div className="empty-icon"><Calendar size={38} /></div>
+        <h3>Preparando gráficos</h3>
+        <p>Estamos montando a visualização de vocês.</p>
+      </div>
+    ),
+  },
+);
 
 const ShareRecapModal = dynamic(
   () => import('@/components/share/ShareRecapModal'),
@@ -27,7 +40,7 @@ function toKey(date) {
 }
 
 export default function ReportsPage() {
-  const { entries, entriesReady, ensureEntriesLoaded } = useCouple();
+  const { entries, entriesReady, ensureEntriesLoaded } = useCoupleEntries();
   const [showRecap, setShowRecap] = useState(false);
 
   useEffect(() => {

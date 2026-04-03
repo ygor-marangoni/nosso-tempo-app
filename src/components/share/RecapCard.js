@@ -18,7 +18,9 @@ function truncate(str, max) {
 }
 
 function normalizeQuotedPhrase(str = '') {
-  return str
+  const safeText = typeof str === 'string' ? str : String(str ?? '');
+
+  return safeText
     .trim()
     .replace(/^[“"'`\u2018\u2019\u201C\u201D\s]+/, '')
     .replace(/[“"'`\u2018\u2019\u201C\u201D]+(?=[.!?…,:;) \]]*$)/g, '')

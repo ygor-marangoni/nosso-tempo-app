@@ -530,10 +530,10 @@ body::after {
 }
 
 .home-counter-foot {
-  margin-top: 7px;
+  margin-top: 10px;
   font-family: var(--font-cursive), cursive;
   font-size: 17px;
-  color: var(--rosa-400);
+  color: var(--rosa-500);
   line-height: 1;
   letter-spacing: 1px;
 }
@@ -590,7 +590,7 @@ body::after {
 }
 
 .home-quote-icon {
-  color: var(--rosa-400);
+  color: var(--rosa-500);
   display: block;
   width: 22.5px;
   height: 22.5px;
@@ -958,7 +958,7 @@ input:focus, select:focus, textarea:focus {
   border: 1.5px solid var(--border);
   border-radius: 50px;
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-light);
   cursor: pointer;
   transition: var(--transition);
@@ -2145,6 +2145,7 @@ input:focus, select:focus, textarea:focus {
   transition: border-color var(--transition), transform var(--transition);
   content-visibility: auto;
   contain-intrinsic-size: 360px;
+  background: var(--card);
 }
 .milestone-card:hover {
   border-color: var(--rosa-300);
@@ -2710,15 +2711,21 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(ellipse at 0% 42%, rgba(255, 122, 156, 0.1) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 8%, rgba(255, 122, 156, 0.06) 0%, transparent 40%),
-    radial-gradient(ellipse at 65% 95%, rgba(180, 80, 120, 0.05) 0%, transparent 40%),
-    radial-gradient(rgba(180, 80, 120, 0.022) 1px, transparent 1px),
+    radial-gradient(ellipse at 0% 42%, var(--rosa-glow) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 8%, var(--ambient-top) 0%, transparent 40%),
+    radial-gradient(ellipse at 65% 95%, var(--ambient-bottom) 0%, transparent 40%),
+    radial-gradient(var(--ambient-top) 1px, transparent 1px),
     var(--bg);
   background-size: auto, auto, auto, 28px 28px, auto;
 }
 
 .ob-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg);
   display: flex;
   align-items: center;
   gap: 20px;
@@ -2766,6 +2773,7 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   justify-content: center;
   padding: 36px 24px 44px;
+  padding-top: calc(36px + 72px);
   width: 100%;
 }
 
@@ -2846,6 +2854,7 @@ input:focus, select:focus, textarea:focus {
   cursor: pointer;
   font-family: inherit;
   padding: 10px 0;
+  height: 54px;
   transition: color 0.2s;
 }
 
@@ -2862,6 +2871,7 @@ input:focus, select:focus, textarea:focus {
   border: none;
   border-radius: var(--radius-sm);
   padding: 13px 26px;
+  height: 54px;
   font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
@@ -2886,23 +2896,114 @@ input:focus, select:focus, textarea:focus {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
-  gap: 40px;
+  padding: 48px 24px;
+  gap: 32px;
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(255, 122, 156, 0.07) 0%, transparent 55%),
+    radial-gradient(ellipse at 0% 42%, var(--rosa-glow) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 8%, var(--ambient-top) 0%, transparent 40%),
+    radial-gradient(ellipse at 65% 95%, var(--ambient-bottom) 0%, transparent 40%),
+    radial-gradient(var(--ambient-top) 1px, transparent 1px),
     var(--bg);
+  background-size: auto, auto, auto, 28px 28px, auto;
 }
 
 .ob-choice-brand {
   text-align: center;
 }
 
+/* ── Invite page ── */
+.invite-wrap {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  gap: 16px;
+  background:
+    radial-gradient(ellipse at 0% 42%, var(--rosa-glow) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 8%, var(--ambient-top) 0%, transparent 40%),
+    radial-gradient(ellipse at 65% 95%, var(--ambient-bottom) 0%, transparent 40%),
+    radial-gradient(var(--ambient-top) 1px, transparent 1px),
+    var(--bg);
+  background-size: auto, auto, auto, 28px 28px, auto;
+}
+
+.invite-card {
+  width: min(100%, 420px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  padding: 32px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.invite-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--rosa-50);
+  border: 1px solid var(--rosa-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rosa-400);
+  margin-bottom: 8px;
+}
+
+.invite-icon-wrap--done {
+  background: linear-gradient(135deg, var(--rosa-50), var(--rosa-100));
+  border-color: var(--rosa-200);
+  color: var(--rosa-500);
+}
+
+.invite-icon-wrap--error {
+  background: #fff5f5;
+  border-color: #fecaca;
+  color: #ef4444;
+}
+
+.invite-title {
+  font-family: var(--font-cursive), cursive;
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--rosa-600);
+  line-height: 1.3;
+}
+
+.invite-message {
+  color: var(--text-light);
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 300px;
+}
+
+.invite-cta {
+  margin-top: 8px;
+  height: 54px;
+}
+
+.ob-choice-brand .auth-brand-header {
+  margin-bottom: 32px;
+}
+
+@media (min-width: 769px) {
+  .ob-choice-brand .auth-brand-header {
+    margin-bottom: 40px;
+  }
+}
+
 .ob-choice-title {
   font-family: var(--font-figtree), sans-serif;
-  font-size: 30px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
   color: var(--text);
-  margin-bottom: 8px;
+  line-height: 1.15;
+  margin-bottom: 6px;
 }
 
 .ob-choice-sub {
@@ -3036,11 +3137,24 @@ input:focus, select:focus, textarea:focus {
   color: var(--rosa-700);
   font-size: 12.5px;
   font-weight: 600;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: inherit;
+  text-decoration: none;
 }
 
 .auth-inline-link:hover,
 .auth-back-link:hover {
   color: var(--rosa-600);
+}
+
+.auth-back-link--centered {
+  display: flex;
+  width: fit-content;
+  margin-inline: auto;
 }
 
 .auth-field label {
@@ -3113,8 +3227,8 @@ input:focus, select:focus, textarea:focus {
   z-index: 1;
   box-shadow: -6px 0 48px rgba(0, 0, 0, 0.10);
   background:
-    radial-gradient(ellipse at 0% 42%, rgba(255, 122, 156, 0.08) 0%, transparent 52%),
-    radial-gradient(rgba(180, 80, 120, 0.032) 1px, transparent 1px),
+    radial-gradient(ellipse at 0% 42%, var(--ambient-top) 0%, transparent 52%),
+    radial-gradient(var(--ambient-top) 1px, transparent 1px),
     var(--card);
   background-size: auto, 28px 28px, auto;
 }
@@ -3174,8 +3288,15 @@ input:focus, select:focus, textarea:focus {
 }
 
 .auth-brand-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+  margin-inline: auto;
   text-align: center;
   margin-bottom: 32px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .auth-brand-title {
@@ -3270,48 +3391,73 @@ input:focus, select:focus, textarea:focus {
   flex-direction: column;
   align-items: center;
   text-align: center;
+  width: 100%;
+  max-width: 360px;
+  margin-inline: auto;
 }
 
 .auth-sent-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, var(--rosa-100), var(--rosa-200));
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: var(--rosa-100);
   border: 1px solid var(--rosa-200);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--rosa-600);
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+}
+
+.auth-sent-state .auth-split-title {
+  font-size: 34px;
+  line-height: 1.08;
+  margin-bottom: 14px;
 }
 
 .auth-sent-desc {
   color: var(--text-light);
   font-size: 15px;
-  line-height: 1.7;
-  margin-bottom: 16px;
+  line-height: 1.65;
+  margin-bottom: 14px;
+  max-width: 320px;
 }
 
 .auth-sent-desc strong {
+  display: block;
   color: var(--text);
   font-weight: 600;
+  font-size: 18px;
+  line-height: 1.45;
+  margin-top: 8px;
 }
 
 .auth-sent-hint {
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.6;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
+  max-width: 310px;
+}
+
+.auth-sent-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
 }
 
 .auth-sent-retry {
-  background: none;
+  width: 100%;
+  max-width: 238px;
+  background: var(--card);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 10px 20px;
+  padding: 12px 20px;
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--text-light);
+  color: var(--text);
   cursor: pointer;
   font-family: inherit;
   transition: var(--transition);
@@ -3319,7 +3465,8 @@ input:focus, select:focus, textarea:focus {
 
 .auth-sent-retry:hover {
   border-color: var(--rosa-300);
-  color: var(--rosa-600);
+  background: var(--rosa-50);
+  color: var(--rosa-700);
 }
 
 .auth-test-row {
@@ -3565,64 +3712,94 @@ input:focus, select:focus, textarea:focus {
 
 /* ─────────────────────────────────────────────────────────────────── */
 
-.choice-card-shell {
-  width: min(100%, 760px);
-}
-
 .choice-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
-  margin-top: 28px;
+  width: min(100%, 680px);
 }
 
 .choice-card {
-  background: var(--rosa-50);
-  border: 1px solid var(--border);
+  background: var(--card);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 28px;
   text-align: left;
   cursor: pointer;
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
+
 
 .choice-card-static {
   cursor: default;
 }
 
+.choice-card--primary {
+  border-color: var(--rosa-200);
+  background: linear-gradient(150deg, var(--card) 0%, var(--rosa-50) 100%);
+}
+
+.choice-card--primary::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rosa-400), var(--rosa-600));
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
 .choice-card-icon {
-  width: 46px;
-  height: 46px;
+  width: 50px;
+  height: 50px;
   border-radius: 14px;
-  background: var(--card);
+  background: var(--rosa-50);
   border: 1px solid var(--border);
   color: var(--rosa-600);
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 18px;
+}
+
+.choice-card-icon--primary {
+  background: linear-gradient(135deg, var(--rosa-100), var(--rosa-50));
+  border-color: var(--rosa-200);
+  color: var(--rosa-600);
 }
 
 .choice-card-title {
-  margin-top: 16px;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text);
+  margin-bottom: 8px;
 }
 
 .choice-card-desc {
-  margin-top: 8px;
   color: var(--text-light);
   font-size: 14px;
   line-height: 1.7;
+  flex: 1;
+}
+
+.choice-card-cta {
+  margin-top: 22px;
+  align-self: flex-start;
+  height: 54px;
 }
 
 .choice-code-row {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   margin-top: 18px;
 }
 
 .choice-code-btn {
   flex-shrink: 0;
+  height: 54px;
 }
 
 .ob-step-content {
@@ -4449,7 +4626,6 @@ span.member-you {
 
 @media (max-width: 920px) {
   .landing-hero,
-  .choice-grid,
   .landing-steps,
   .landing-features,
   .theme-picker-grid {
@@ -4459,6 +4635,12 @@ span.member-you {
   .landing-hero {
     min-height: auto;
     padding-top: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .choice-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -5812,7 +5994,7 @@ span.member-you {
 }
 
 .recap-trigger-btn--reports:hover {
-  background: #fff;
+  background: var(--rosa-50);
   border-color: var(--rosa-500);
 
 }

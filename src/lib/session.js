@@ -1,5 +1,6 @@
 const PENDING_INVITE_KEY = 'pendingInvite';
 const AUTH_FLOW_KEY = 'authFlow';
+const PENDING_COUPLE_SYNC_KEY = 'pendingCoupleSync';
 
 function canUseSessionStorage() {
   return typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined';
@@ -22,6 +23,21 @@ export function setPendingInviteCode(code) {
 export function clearPendingInviteCode() {
   if (!canUseSessionStorage()) return;
   window.sessionStorage.removeItem(PENDING_INVITE_KEY);
+}
+
+export function getPendingCoupleSyncId() {
+  if (!canUseSessionStorage()) return '';
+  return window.sessionStorage.getItem(PENDING_COUPLE_SYNC_KEY) || '';
+}
+
+export function setPendingCoupleSyncId(coupleId) {
+  if (!canUseSessionStorage()) return;
+  window.sessionStorage.setItem(PENDING_COUPLE_SYNC_KEY, coupleId || '');
+}
+
+export function clearPendingCoupleSyncId() {
+  if (!canUseSessionStorage()) return;
+  window.sessionStorage.removeItem(PENDING_COUPLE_SYNC_KEY);
 }
 
 export function getAuthFlow() {

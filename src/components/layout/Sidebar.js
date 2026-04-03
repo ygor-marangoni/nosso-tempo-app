@@ -4,7 +4,7 @@ import { memo, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Heart } from 'lucide-react';
-import { useCouple } from '@/contexts/CoupleContext';
+import { useCoupleConfig } from '@/contexts/CoupleContext';
 import {
   MAIN_NAV,
   getCoupleInitials,
@@ -27,7 +27,7 @@ function NavItem({ href, label, Icon, pathname }) {
 
 function Sidebar() {
   const pathname = usePathname();
-  const { config } = useCouple();
+  const { config } = useCoupleConfig();
   const { name1 = '', name2 = '' } = config;
 
   const names = useMemo(() => getCoupleNames(name1, name2), [name1, name2]);
