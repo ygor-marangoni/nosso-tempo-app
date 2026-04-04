@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Copy, Heart, Pencil, Quote, Sparkles } from 'lucide-react';
 import { useCoupleConfig, useCoupleMeta, useCouplePhrases } from '@/contexts/CoupleContext';
-import { calcRelationshipTime } from '@/lib/dateUtils';
+import { calcRelationshipTime, MONTHS_PT } from '@/lib/dateUtils';
 import { inviteHref } from '@/lib/invite';
 
 const ShareRecapModal = dynamic(
@@ -47,6 +47,12 @@ export default function HomePage() {
   const [showRecap, setShowRecap] = useState(false);
 
   const { name1 = '', name2 = '', startDate, couplePhotoUrl, inviteCode } = config;
+  const sinceLabel = startDate
+    ? (() => {
+        const d = new Date(`${startDate}T12:00:00`);
+        return `desde ${d.getDate()} de ${MONTHS_PT[d.getMonth()]} de ${d.getFullYear()}`;
+      })()
+    : null;
   const stableSeed = `${couple?.id || inviteCode || 'nosso-tempo'}:${name1}:${name2}`;
   const subPhrase = useMemo(() => pickStableItem(SUB_PHRASES, stableSeed) || SUB_PHRASES[0], [stableSeed]);
   const randomPhrase = useMemo(() => {
@@ -119,7 +125,6 @@ export default function HomePage() {
             {name2}
           </span>
         </div>
-        <p className="home-subgreet">{subPhrase}</p>
       </div>
 
       {startDate ? (
@@ -132,7 +137,7 @@ export default function HomePage() {
                   <span className="cnt-lbl">{time.years === 1 ? 'ano' : 'anos'}</span>
                 </div>
                 <div className="cnt-sep">
-                  <span className="home-counter-legend">·</span>
+                  <Heart size={8} fill="currentColor" className="home-counter-legend" />
                 </div>
               </>
             )}
@@ -144,7 +149,7 @@ export default function HomePage() {
                   <span className="cnt-lbl">{time.months === 1 ? 'mês' : 'meses'}</span>
                 </div>
                 <div className="cnt-sep">
-                  <span className="home-counter-legend">·</span>
+                  <Heart size={8} fill="currentColor" className="home-counter-legend" />
                 </div>
               </>
             )}
@@ -154,7 +159,7 @@ export default function HomePage() {
               <span className="cnt-lbl">{time?.days === 1 ? 'dia' : 'dias'}</span>
             </div>
           </div>
-          <div className="home-counter-foot">juntos</div>
+          <div className="home-counter-foot">{sinceLabel}</div>
         </div>
       ) : (
         <p className="home-no-date" onClick={() => router.push('/app/settings')}>
