@@ -1884,8 +1884,8 @@ input:focus, select:focus, textarea:focus {
 .bottom-nav {
   display: none;
   position: fixed;
-  left: 12px;
-  right: 12px;
+  left: 50%;
+  width: min(calc(100% - 24px), 430px);
   bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
   background: var(--card);
   border: 1px solid var(--border);
@@ -1895,12 +1895,13 @@ input:focus, select:focus, textarea:focus {
   align-items: stretch;
   justify-content: space-between;
   gap: 3px;
+  transform: translateX(-50%);
   transition: transform 260ms ease, opacity 220ms ease;
   will-change: transform, opacity;
 }
 
 .bottom-nav.is-hidden {
-  transform: translateY(calc(100% + env(safe-area-inset-bottom, 0px) + 22px));
+  transform: translateX(-50%) translateY(calc(100% + env(safe-area-inset-bottom, 0px) + 22px));
   opacity: 0;
   pointer-events: none;
 }
@@ -2060,8 +2061,7 @@ input:focus, select:focus, textarea:focus {
   }
 
   .bottom-nav {
-    left: 8px;
-    right: 8px;
+    width: calc(100% - 16px);
     padding-inline: 5px;
   }
 }
