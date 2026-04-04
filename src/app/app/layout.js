@@ -46,6 +46,16 @@ export default function AppLayout({ children }) {
     setPendingCoupleSyncId(getPendingCoupleSyncId());
   }, [pathname, user?.uid]);
 
+  const configReadyForFirstEntry = Boolean(config?.name1?.trim() && config?.name2?.trim());
+  const waitingForCoupleSync = Boolean(
+    user
+      && pendingCoupleSyncId
+      && (
+        !coupleId
+        || (coupleId === pendingCoupleSyncId && !configReadyForFirstEntry)
+      ),
+  );
+
   useEffect(() => {
     if (!user) {
       clearPendingCoupleSyncId();
@@ -53,13 +63,17 @@ export default function AppLayout({ children }) {
       return;
     }
 
-    if (coupleId && pendingCoupleSyncId) {
+    if (coupleId && pendingCoupleSyncId && coupleId !== pendingCoupleSyncId) {
+      clearPendingCoupleSyncId();
+      setPendingCoupleSyncId('');
+      return;
+    }
+
+    if (coupleId && pendingCoupleSyncId && configReadyForFirstEntry) {
       clearPendingCoupleSyncId();
       setPendingCoupleSyncId('');
     }
-  }, [coupleId, pendingCoupleSyncId, user]);
-
-  const waitingForCoupleSync = Boolean(user && pendingCoupleSyncId && !coupleId);
+  }, [configReadyForFirstEntry, coupleId, pendingCoupleSyncId, user]);
 
   useEffect(() => {
     const palette = config?.palette;
