@@ -14,6 +14,7 @@ function BottomNav() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [realMobileOffset, setRealMobileOffset] = useState(false);
   const moreRef = useRef(null);
   const lastScrollYRef = useRef(0);
   const tickingRef = useRef(false);
@@ -88,9 +89,38 @@ function BottomNav() {
     if (moreOpen) setHidden(false);
   }, [moreOpen]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    function detectRealMobileDevice() {
+      const ua = navigator.userAgent || '';
+      const platform = navigator.userAgentData?.platform || navigator.platform || '';
+      const isMobileUA = Boolean(navigator.userAgentData?.mobile)
+        || /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+      const isDesktopOS = /Windows|Win32|Win64|Macintosh|MacIntel|X11|Linux x86_64/i.test(
+        `${platform} ${ua}`,
+      );
+      const isTouchCapable = (navigator.maxTouchPoints || 0) > 1
+        || window.matchMedia('(pointer: coarse)').matches;
+      const isLikelyDesktopEmulation = Math.abs((window.outerWidth || 0) - window.innerWidth) > 120
+        || Math.abs((window.outerHeight || 0) - window.innerHeight) > 120;
+
+      setRealMobileOffset(
+        isMobileUA && isTouchCapable && !isDesktopOS && !isLikelyDesktopEmulation,
+      );
+    }
+
+    detectRealMobileDevice();
+    window.addEventListener('resize', detectRealMobileDevice);
+
+    return () => {
+      window.removeEventListener('resize', detectRealMobileDevice);
+    };
+  }, []);
+
   return (
     <nav
-      className={`bottom-nav${hidden && !moreOpen ? ' is-hidden' : ''}`}
+      className={`bottom-nav${realMobileOffset ? ' is-real-mobile' : ''}${hidden && !moreOpen ? ' is-hidden' : ''}`}
       aria-label="Navegação mobile"
     >
       {MOBILE_PRIMARY_NAV.map(({ href, label, Icon }) => {

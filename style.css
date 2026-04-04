@@ -1898,15 +1898,23 @@ input:focus, select:focus, textarea:focus {
   align-items: stretch;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 3px;
-  transform: translateX(-3px);
+  transform: none;
   transition: transform 260ms ease, opacity 220ms ease;
   will-change: transform, opacity;
 }
 
+.bottom-nav.is-real-mobile {
+  transform: translateX(-3px);
+}
+
 .bottom-nav.is-hidden {
-  transform: translateX(-3px) translateY(calc(100% + env(safe-area-inset-bottom, 0px) + 22px));
+  transform: translateY(calc(100% + env(safe-area-inset-bottom, 0px) + 22px));
   opacity: 0;
   pointer-events: none;
+}
+
+.bottom-nav.is-real-mobile.is-hidden {
+  transform: translateX(-3px) translateY(calc(100% + env(safe-area-inset-bottom, 0px) + 22px));
 }
 
 .bn-item {
