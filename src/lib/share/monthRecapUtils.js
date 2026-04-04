@@ -1,5 +1,14 @@
 import { MONTHS_PT, formatTime } from '@/lib/dateUtils';
 
+function formatRecapTime(hours = 0) {
+  const totalMinutes = Math.max(0, Math.round(Number(hours || 0) * 60));
+
+  if (totalMinutes === 0) return '0min';
+  if (totalMinutes < 60) return `${totalMinutes}min`;
+
+  return `${Math.max(1, Math.round(totalMinutes / 60))}h`;
+}
+
 /**
  * Calcula os dados do recap mensal a partir dos dados do casal.
  * Filtra pelo mês corrente.
@@ -84,7 +93,7 @@ export function calcMonthRecap({ entries = [], album = [], phrases = [], config 
     month,
     monthName: MONTHS_PT[month],
     totalHours,
-    totalHoursFormatted: totalHours > 0 ? formatTime(totalHours) : '0h',
+    totalHoursFormatted: formatRecapTime(totalHours),
     momentCount,
     topActivity,
     bestDay,
