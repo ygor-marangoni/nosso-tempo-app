@@ -271,8 +271,15 @@ export default function OnboardingPage() {
 
   function accessCreatedSpace() {
     isCreatingSpaceFlowRef.current = false;
-    if (createdCoupleId) {
-      setPendingCoupleSyncId(createdCoupleId);
+    const targetCoupleId = createdCoupleId || createdCoupleIdRef.current || coupleId;
+
+    if (targetCoupleId) {
+      setPendingCoupleSyncId(targetCoupleId);
+    }
+
+    if (typeof window !== 'undefined') {
+      window.location.assign('/app/home');
+      return;
     }
 
     router.replace('/app/home');

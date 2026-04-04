@@ -5994,7 +5994,6 @@ span.member-you {
 }
 
 .recap-trigger-btn--reports:hover {
-  background: var(--rosa-50);
   border-color: var(--rosa-500);
 
 }
