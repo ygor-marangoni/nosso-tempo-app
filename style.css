@@ -196,8 +196,20 @@ body::after {
   padding: 28px 18px 20px;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   z-index: 100;
   transition: var(--transition);
+}
+
+.sidebar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .logo-area {
@@ -1311,7 +1323,7 @@ input:focus, select:focus, textarea:focus {
 /* ── REPORTS ── */
 .report-summary {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 24px;
 }
@@ -1330,7 +1342,7 @@ input:focus, select:focus, textarea:focus {
 
 .reports-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -1361,7 +1373,7 @@ input:focus, select:focus, textarea:focus {
 /* ─── Stats grid ─── */
 .report-stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 24px;
 }
@@ -1374,6 +1386,7 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0;
 }
 
 .rstat-icon {
@@ -1411,6 +1424,7 @@ input:focus, select:focus, textarea:focus {
   align-items: baseline;
   gap: 8px;
   flex-wrap: wrap;
+  min-width: 0;
   margin-top: 4px;
 }
 
@@ -1426,6 +1440,16 @@ input:focus, select:focus, textarea:focus {
   font-size: 13px;
   color: var(--text-muted);
   font-weight: 400;
+}
+
+@media (max-width: 1120px) {
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* ─── Heatmap ─── */
