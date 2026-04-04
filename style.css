@@ -1886,6 +1886,7 @@ input:focus, select:focus, textarea:focus {
   position: fixed;
   left: 50%;
   width: min(calc(100% - 24px), 430px);
+  box-sizing: border-box;
   bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
   background: var(--card);
   border: 1px solid var(--border);
@@ -1893,7 +1894,7 @@ input:focus, select:focus, textarea:focus {
   padding: 10px 6px;
   z-index: 170;
   align-items: stretch;
-  justify-content: space-between;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 3px;
   transform: translateX(-50%);
   transition: transform 260ms ease, opacity 220ms ease;
@@ -1934,12 +1935,12 @@ input:focus, select:focus, textarea:focus {
 
 .bn-more-wrap {
   position: relative;
-  flex: 1;
+  min-width: 0;
   display: flex;
 }
 
 .bn-more-wrap > .bn-item {
-  width: 100%;
+  flex: 1;
 }
 
 .bn-more-sheet {
@@ -2033,7 +2034,7 @@ input:focus, select:focus, textarea:focus {
   .icon-picker-popup { max-height: 206px; overflow-y: auto; }
   .mobile-header { display: flex; }
   .sidebar { display: none; }
-  .bottom-nav { display: flex; }
+  .bottom-nav { display: grid; }
   .main { margin-left: 0; padding: 102px 18px calc(112px + env(safe-area-inset-bottom, 0px)); }
   .form-grid { grid-template-columns: 1fr; }
   .reports-grid { grid-template-columns: 1fr; }
