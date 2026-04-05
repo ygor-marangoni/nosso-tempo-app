@@ -1884,11 +1884,9 @@ input:focus, select:focus, textarea:focus {
 .bottom-nav {
   display: none;
   position: fixed;
-  left: 0;
-  right: 0;
-  width: min(calc(100vw - 24px), 430px);
+  left: max(12px, calc((100vw - 430px) / 2));
+  right: max(12px, calc((100vw - 430px) / 2));
   box-sizing: border-box;
-  margin-inline: auto;
   bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
   background: var(--card);
   border: 1px solid var(--border);
@@ -1903,18 +1901,10 @@ input:focus, select:focus, textarea:focus {
   will-change: transform, opacity;
 }
 
-.bottom-nav.is-real-mobile {
-  transform: translateX(-3px);
-}
-
 .bottom-nav.is-hidden {
   transform: translateY(calc(100% + env(safe-area-inset-bottom, 0px) + 22px));
   opacity: 0;
   pointer-events: none;
-}
-
-.bottom-nav.is-real-mobile.is-hidden {
-  transform: translateX(-3px) translateY(calc(100% + env(safe-area-inset-bottom, 0px) + 22px));
 }
 
 .bn-item {
@@ -2072,7 +2062,8 @@ input:focus, select:focus, textarea:focus {
   }
 
   .bottom-nav {
-    width: calc(100vw - 16px);
+    left: 8px;
+    right: 8px;
     padding-inline: 5px;
   }
 }
