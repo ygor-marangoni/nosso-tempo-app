@@ -20,6 +20,12 @@ const cursive = Covered_By_Your_Grace({
   display: 'swap',
 });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
+
 export const metadata = {
   metadataBase: new URL(siteUrl),
   title: {
