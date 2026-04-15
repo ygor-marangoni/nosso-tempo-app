@@ -5709,7 +5709,7 @@ span.member-you {
   transform: scaleY(-1);
   margin-top: 0;
   margin-bottom: -1px;
-  background: var(--rosa-50);
+  background: var(--bg);
 }
 
 /* rosa-50 → rosa-médio */
@@ -5783,10 +5783,13 @@ span.member-you {
   opacity: 1;
 }
 
-html[data-palette='pessego'] .lp-divider--from-compare {
+html[data-palette='pessego'] .lpf-feature {
   background: var(--bg);
 }
 
+html[data-palette='pessego'] .lp-divider--from-compare {
+  background: var(--bg);
+}
 html[data-palette='pessego'] .lp-divider--from-compare .lp-divider-bg {
   fill: var(--bg);
 }
@@ -5826,7 +5829,7 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
 }
 
 .lp-divider--flip .lp-divider-bg {
-  fill: var(--rosa-50);
+  fill: var(--bg);
 }
 
 .lp-divider-wave {
