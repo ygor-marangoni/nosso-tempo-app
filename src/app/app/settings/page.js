@@ -7,6 +7,7 @@ import {
   Copy,
   Heart,
   KeyRound,
+  Lock,
   LogOut,
   Mail,
   Palette,
@@ -750,7 +751,7 @@ export default function SettingsPage() {
 
           {isEmailPasswordAccount && !user?.isDemo ? (
             <div className="account-password-section">
-              <div className="account-password-title">Trocar senha</div>
+              <div className="account-password-title"><Lock size={16} />Trocar senha</div>
               <div className="account-password-grid">
                 <div>
                   <label>Senha atual</label>
