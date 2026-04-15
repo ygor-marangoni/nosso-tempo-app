@@ -5783,14 +5783,21 @@ span.member-you {
   opacity: 1;
 }
 
-html[data-palette='pessego'] .lpf-feature {
+html[data-palette] .lpf-feature {
   background: var(--bg);
 }
 
-html[data-palette='pessego'] .lp-divider--from-compare {
+html[data-palette] .lp-divider--to-compare {
   background: var(--bg);
 }
-html[data-palette='pessego'] .lp-divider--from-compare .lp-divider-bg {
+html[data-palette] .lp-divider--to-compare .lp-divider-bg {
+  fill: var(--bg);
+}
+
+html[data-palette] .lp-divider--from-compare {
+  background: var(--bg);
+}
+html[data-palette] .lp-divider--from-compare .lp-divider-bg {
   fill: var(--bg);
 }
 
