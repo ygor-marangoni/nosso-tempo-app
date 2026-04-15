@@ -8586,6 +8586,14 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
   margin-top: 1px;
 }
 
+.postit--recado .postit-conteudo {
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  max-height: calc(12.5px * 1.55 * 4);
+  overflow: hidden;
+  flex: none;
+}
+
 .postit-footer {
   display: none !important;
 }

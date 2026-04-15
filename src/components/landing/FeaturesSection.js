@@ -1063,7 +1063,6 @@ function MuralDetailModal({ item, onClose }) {
 
 function MuralFeature({ onShowToast }) {
   const [filter, setFilter] = useState('todos');
-  const [formOpen, setFormOpen] = useState(null);
   const [detailItem, setDetailItem] = useState(null);
   const [dragPositions, setDragPositions] = useState(() => {
     const positions = {};
@@ -1199,27 +1198,14 @@ function MuralFeature({ onShowToast }) {
                     </p>
                   </div>
 
-                  {/* Formulário inline */}
-                  {formOpen && (
-                    <MuralInlineForm
-                      tipo={formOpen}
-                      onClose={() => setFormOpen(null)}
-                      onSubmit={() => {
-                        setFormOpen(null);
-                        onShowToast('Crie seu espaço para deixar recados pro seu amor');
-                      }}
-                    />
-                  )}
-
                   {/* Controles */}
-                  {!formOpen && (
-                    <div className="mural-controls">
+                  <div className="mural-controls">
                       <div className="mural-action-row">
-                        <button className="btn btn-primary btn-sm" onClick={() => setFormOpen('recado')}>
+                        <button className="btn btn-primary btn-sm" onClick={() => onShowToast('Crie seu espaço para deixar recados pro seu amor')}>
                           <NotebookPen size={14} strokeWidth={2.5} />
                           Registrar Recado
                         </button>
-                        <button className="btn btn-secondary btn-sm" onClick={() => setFormOpen('evento')}>
+                        <button className="btn btn-secondary btn-sm" onClick={() => onShowToast('Crie seu espaço para deixar recados pro seu amor')}>
                           <Calendar size={14} />
                           Registrar Evento
                         </button>
@@ -1236,8 +1222,7 @@ function MuralFeature({ onShowToast }) {
                           </button>
                         ))}
                       </div>
-                    </div>
-                  )}
+                  </div>
 
                   {/* Contador */}
                   <div className="card-title mural-counter">
