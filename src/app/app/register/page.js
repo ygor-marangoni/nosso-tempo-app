@@ -269,7 +269,7 @@ export default function RegisterPage() {
           <button className="btn btn-primary" onClick={save} disabled={saving}>
             {saving ? 'Salvando...' : (
               <>
-                <Heart size={15} />
+                <Heart size={15} strokeWidth={2.5} />
                 Salvar Momento
               </>
             )}

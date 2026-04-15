@@ -248,7 +248,7 @@ export default function AlbumPage() {
 
       <div className="album-controls">
         <button className="btn btn-primary btn-sm" onClick={openForm}>
-          <Plus size={14} />
+          <Plus size={14} strokeWidth={2.5} />
           Adicionar Foto
         </button>
 

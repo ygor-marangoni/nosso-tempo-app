@@ -6,29 +6,32 @@ import {
   Milestone,
   MoreHorizontal,
   Pencil,
+  Pin,
   Settings,
 } from 'lucide-react';
 
 export const MAIN_NAV = [
-  { href: '/app/home', label: 'Início', Icon: Home },
+  { href: '/app/home', label: 'In\u00edcio', Icon: Home },
   { href: '/app/register', label: 'Registrar', Icon: Pencil },
-  { href: '/app/history', label: 'Histórico', Icon: BookOpen },
-  { href: '/app/album', label: 'Álbum', Icon: ImageIcon },
+  { href: '/app/history', label: 'Hist\u00f3rico', Icon: BookOpen },
+  { href: '/app/mural', label: 'Mural', Icon: Pin },
+  { href: '/app/album', label: '\u00c1lbum', Icon: ImageIcon },
   { href: '/app/timeline', label: 'Linha do Tempo', Icon: Milestone },
-  { href: '/app/reports', label: 'Relatórios', Icon: BarChart3 },
+  { href: '/app/reports', label: 'Relat\u00f3rios', Icon: BarChart3 },
   { href: '/app/settings', label: 'Ajustes', Icon: Settings },
 ];
 
 export const MOBILE_PRIMARY_NAV = [
-  { href: '/app/home', label: 'Início', Icon: Home },
+  { href: '/app/home', label: 'In\u00edcio', Icon: Home },
   { href: '/app/register', label: 'Registrar', Icon: Pencil },
-  { href: '/app/history', label: 'Histórico', Icon: BookOpen },
-  { href: '/app/album', label: 'Álbum', Icon: ImageIcon },
+  { href: '/app/mural', label: 'Mural', Icon: Pin },
+  { href: '/app/album', label: '\u00c1lbum', Icon: ImageIcon },
   { href: '/app/timeline', label: 'Linha do Tempo', Icon: Milestone },
 ];
 
 export const MOBILE_MORE_NAV = [
-  { href: '/app/reports', label: 'Relatórios', Icon: BarChart3 },
+  { href: '/app/history', label: 'Hist\u00f3rico', Icon: BookOpen },
+  { href: '/app/reports', label: 'Relat\u00f3rios', Icon: BarChart3 },
   { href: '/app/settings', label: 'Ajustes', Icon: Settings },
 ];
 
@@ -38,13 +41,14 @@ export const MORE_TRIGGER = {
 };
 
 export const APP_TITLES = {
-  '/app/home': 'Início',
+  '/app/home': 'In\u00edcio',
   '/app/register': 'Registrar Momento',
-  '/app/history': 'Memórias Compartilhadas',
+  '/app/history': 'Mem\u00f3rias Compartilhadas',
   '/app/reports': 'Retratos do Tempo',
-  '/app/album': 'Álbum de Memórias',
-  '/app/timeline': 'Marcos da Nossa História',
-  '/app/settings': 'Nosso Espaço',
+  '/app/album': '\u00c1lbum de Mem\u00f3rias',
+  '/app/timeline': 'Marcos da Nossa Hist\u00f3ria',
+  '/app/mural': 'Mural do Casal',
+  '/app/settings': 'Nosso Espa\u00e7o',
 };
 
 export function isRouteActive(pathname, href) {

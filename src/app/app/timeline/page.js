@@ -289,7 +289,7 @@ export default function TimelinePage() {
 
       <div style={{ marginBottom: 20 }}>
         <button className="btn btn-primary btn-sm" onClick={() => setFormOpen(true)}>
-          <Plus size={14} />
+          <Plus size={14} strokeWidth={2.5} />
           Adicionar Marco
         </button>
       </div>
@@ -416,7 +416,7 @@ export default function TimelinePage() {
 
                         <div className="form-actions" style={{ marginTop: 20 }}>
                           <button className="btn btn-primary btn-sm" onClick={saveEdit} disabled={saving}>
-                            <Check size={14} />
+                            <Check size={14} strokeWidth={2.5} />
                             Salvar
                           </button>
                           <button className="btn btn-secondary btn-sm" onClick={cancelEdit}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useCoupleConfig } from '@/contexts/CoupleContext';
 import { PALETTE_OPTIONS } from '@/lib/tagConfig';
@@ -26,7 +26,49 @@ function ensureHeadLink(rel) {
 export default function DynamicFavicon() {
   const pathname = usePathname();
   const { config } = useCoupleConfig();
-  const palette = config?.palette || 'rosa';
+  const [livePalette, setLivePalette] = useState('rosa');
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const readPalette = () =>
+      document.documentElement.dataset.palette ||
+      localStorage.getItem('nt_palette') ||
+      'rosa';
+
+    const syncPalette = () => setLivePalette(readPalette());
+
+    syncPalette();
+
+    const observer = new MutationObserver(syncPalette);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-palette'],
+    });
+
+    const handleStorage = event => {
+      if (!event.key || event.key === 'nt_palette') syncPalette();
+    };
+
+    const handlePaletteChange = event => {
+      const nextPalette = event?.detail?.palette;
+      if (nextPalette) setLivePalette(nextPalette);
+      else syncPalette();
+    };
+
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('nt:palette-change', handlePaletteChange);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('nt:palette-change', handlePaletteChange);
+    };
+  }, []);
+
+  const palette = pathname?.startsWith('/app')
+    ? (config?.palette || livePalette || 'rosa')
+    : (livePalette || config?.palette || 'rosa');
 
   const primaryColor = useMemo(() => {
     const selected = PALETTE_OPTIONS.find(option => option.id === palette);

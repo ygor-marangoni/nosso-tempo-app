@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, Calendar, Check, ChevronDown, Clock, FileText, Pencil, Plus, SlidersHorizontal, Trash2, X } from 'lucide-react';
+import { BookOpen, Calendar, Check, ChevronDown, Clock, FileText, Pencil, Plus, SlidersHorizontal, Sparkles, Trash2, X } from 'lucide-react';
 import { useCouple } from '@/contexts/CoupleContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -9,7 +9,7 @@ import AppDatePicker from '@/components/common/AppDatePicker';
 import LayerPortal from '@/components/common/LayerPortal';
 import LucideIcon from '@/components/common/LucideIcon';
 import { formatTime, MONTHS_SHORT_PT } from '@/lib/dateUtils';
-import { allTags, normalizeActivities, normalizeTagName, tagIcon } from '@/lib/tagConfig';
+import { ICON_OPTIONS, allTags, normalizeActivities, normalizeTagName, tagIcon } from '@/lib/tagConfig';
 
 const FILTERS = [
   { id: 'all', label: 'Todos' },
@@ -18,10 +18,11 @@ const FILTERS = [
 ];
 
 export default function HistoryPage() {
-  const { entries, entriesReady, config, ensureEntriesLoaded, updateEntry, removeEntry } = useCouple();
+  const { entries, entriesReady, config, ensureEntriesLoaded, updateEntry, removeEntry, addCustomTag } = useCouple();
   const { showToast } = useToast();
   const { showConfirm } = useConfirm();
   const categoryMenuRef = useRef(null);
+  const editIconPickerRef = useRef(null);
   const customTags = useMemo(() => config.customTags || [], [config.customTags]);
   const tags = useMemo(() => allTags(customTags), [customTags]);
   const [filter, setFilter] = useState('all');
@@ -34,6 +35,8 @@ export default function HistoryPage() {
   const [editNote, setEditNote] = useState('');
   const [editSelected, setEditSelected] = useState([]);
   const [editCustomActivity, setEditCustomActivity] = useState('');
+  const [editSelectedIcon, setEditSelectedIcon] = useState('sparkles');
+  const [editIconPickerOpen, setEditIconPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -117,11 +120,16 @@ export default function HistoryPage() {
       if (!categoryMenuRef.current?.contains(event.target)) {
         setCategoryMenuOpen(false);
       }
+
+      if (!editIconPickerRef.current?.contains(event.target)) {
+        setEditIconPickerOpen(false);
+      }
     }
 
     function handleEscape(event) {
       if (event.key === 'Escape') {
         setCategoryMenuOpen(false);
+        setEditIconPickerOpen(false);
       }
     }
 
@@ -161,21 +169,32 @@ export default function HistoryPage() {
     setEditNote(entry.note || '');
     setEditSelected(normalizeActivities(entry.activities || []));
     setEditCustomActivity('');
+    setEditSelectedIcon('sparkles');
+    setEditIconPickerOpen(false);
   }
 
   function closeModal() {
     setEditingEntry(null);
+    setEditIconPickerOpen(false);
   }
 
   function toggleEditTag(tag) {
     setEditSelected(current => (current.includes(tag) ? current.filter(item => item !== tag) : [...current, tag]));
   }
 
-  function addEditCustomActivity() {
+  async function addEditCustomActivity() {
     const value = editCustomActivity.trim();
     if (!value) return;
-    if (!editSelected.includes(value)) setEditSelected(current => [...current, value]);
-    setEditCustomActivity('');
+
+    try {
+      await addCustomTag({ name: value, icon: editSelectedIcon });
+      if (!editSelected.includes(value)) setEditSelected(current => [...current, value]);
+      setEditCustomActivity('');
+      setEditSelectedIcon('sparkles');
+      setEditIconPickerOpen(false);
+    } catch {
+      showToast('N\u00e3o foi poss\u00edvel adicionar a atividade personalizada.');
+    }
   }
 
   async function saveEdit() {
@@ -426,7 +445,12 @@ export default function HistoryPage() {
                 </div>
 
                 <div className="form-full">
-                  <label>O que vocês fizeram?</label>
+                  <label>
+                    <span className="label-icon">
+                      <Sparkles size={13} />
+                    </span>
+                    O que voc&ecirc;s fizeram?
+                  </label>
                   <div className="preset-tags">
                     {tags.map(tag => (
                       <span
@@ -442,22 +466,53 @@ export default function HistoryPage() {
                     ))}
                   </div>
 
-                  <div className="custom-activity-row">
-                    <input
-                      type="text"
-                      placeholder="Adicionar atividade personalizada..."
-                      value={editCustomActivity}
-                      onChange={event => setEditCustomActivity(event.target.value)}
-                      onKeyDown={event => {
-                        if (event.key === 'Enter') {
-                          event.preventDefault();
-                          addEditCustomActivity();
-                        }
-                      }}
-                    />
-                    <button className="btn btn-secondary btn-sm" onClick={addEditCustomActivity}>
-                      <Plus size={15} />
-                    </button>
+                  <div className="icon-picker-area" ref={editIconPickerRef}>
+                    <div className="tag-input-row">
+                      <button
+                        className={`icon-picker-btn${editIconPickerOpen ? ' active' : ''}`}
+                        type="button"
+                        onClick={() => setEditIconPickerOpen(open => !open)}
+                      >
+                        <LucideIcon name={editSelectedIcon} size={16} />
+                      </button>
+                      <input
+                        type="text"
+                        placeholder="Nova atividade..."
+                        value={editCustomActivity}
+                        onChange={event => setEditCustomActivity(event.target.value)}
+                        onKeyDown={event => {
+                          if (event.key === 'Enter') {
+                            event.preventDefault();
+                            addEditCustomActivity();
+                          }
+                        }}
+                      />
+                      <button className="btn btn-secondary btn-sm tag-add-btn" onClick={addEditCustomActivity}>
+                        <Plus size={14} />
+                        Adicionar
+                      </button>
+                    </div>
+
+                    {editIconPickerOpen && (
+                      <div className="icon-picker-popup show">
+                        <div className="icon-picker-title">Escolha um &iacute;cone</div>
+                        <div className="icon-grid">
+                          {ICON_OPTIONS.map(icon => (
+                            <button
+                              key={icon}
+                              type="button"
+                              className={`icon-option${editSelectedIcon === icon ? ' selected' : ''}`}
+                              onClick={() => {
+                                setEditSelectedIcon(icon);
+                                setEditIconPickerOpen(false);
+                              }}
+                            >
+                              <LucideIcon name={icon} size={18} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

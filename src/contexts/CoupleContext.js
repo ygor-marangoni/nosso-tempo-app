@@ -28,6 +28,7 @@ const CoupleEntriesContext = createContext(null);
 const CoupleAlbumContext = createContext(null);
 const CoupleTimelineContext = createContext(null);
 const CouplePhrasesContext = createContext(null);
+const CoupleMuralContext = createContext(null);
 
 const DEFAULT_CONFIG = {
   palette: 'rosa',
@@ -39,6 +40,7 @@ const INITIAL_FEATURE_FLAGS = {
   album: false,
   timeline: false,
   phrases: false,
+  mural: false,
 };
 
 function sortMembers(members = []) {
@@ -79,6 +81,7 @@ export function CoupleProvider({ children }) {
   const [album, setAlbum] = useState([]);
   const [timeline, setTimeline] = useState([]);
   const [phrases, setPhrases] = useState([]);
+  const [mural, setMural] = useState([]);
   const [members, setMembers] = useState([]);
   const [config, setConfig] = useState(DEFAULT_CONFIG);
   const userUnsubRef = useRef(null);
@@ -105,6 +108,9 @@ export function CoupleProvider({ children }) {
         return;
       case 'phrases':
         setPhrases(items);
+        return;
+      case 'mural':
+        setMural(items);
         return;
       default:
     }
@@ -133,6 +139,7 @@ export function CoupleProvider({ children }) {
     setAlbum([]);
     setTimeline([]);
     setPhrases([]);
+    setMural([]);
     setMembers([]);
     setConfig(DEFAULT_CONFIG);
     resetFeatureFlags();
@@ -165,9 +172,10 @@ export function CoupleProvider({ children }) {
     setAlbum(state.album || []);
     setTimeline(state.timeline || []);
     setPhrases(state.phrases || []);
+    setMural(state.mural || []);
     setMembers(sortMembers(state.members || []));
     setConfig(normalizeConfigRecord(state.config || {}));
-    featureReadyRef.current = { entries: true, album: true, timeline: true, phrases: true };
+    featureReadyRef.current = { entries: true, album: true, timeline: true, phrases: true, mural: true };
     featureLoadingRef.current = INITIAL_FEATURE_FLAGS;
     setFeatureReady(featureReadyRef.current);
     setFeatureLoading(INITIAL_FEATURE_FLAGS);
@@ -234,6 +242,7 @@ export function CoupleProvider({ children }) {
         setAlbum([]);
         setTimeline([]);
         setPhrases([]);
+        setMural([]);
         resetFeatureFlags();
         activeCoupleRef.current = nextCoupleId;
         attachCoupleListeners(nextCoupleId);
@@ -354,6 +363,7 @@ export function CoupleProvider({ children }) {
   const ensureAlbumLoaded = useCallback(() => ensureFeatureLoaded('album'), [ensureFeatureLoaded]);
   const ensureTimelineLoaded = useCallback(() => ensureFeatureLoaded('timeline'), [ensureFeatureLoaded]);
   const ensurePhrasesLoaded = useCallback(() => ensureFeatureLoaded('phrases'), [ensureFeatureLoaded]);
+  const ensureMuralLoaded = useCallback(() => ensureFeatureLoaded('mural'), [ensureFeatureLoaded]);
 
   const currentMember = useMemo(
     () => members.find(member => member.id === user?.uid) || null,
@@ -922,6 +932,59 @@ export function CoupleProvider({ children }) {
     await deleteDoc(doc(db, 'couples', coupleId, 'phrases', id));
   }
 
+  async function addMuralItem(item) {
+    if (isDemoMode) {
+      updateDemoState(state => ({
+        ...state,
+        mural: [
+          ...( state.mural || []),
+          {
+            id: createLocalId('demo-mural'),
+            ...item,
+            ...actorMeta(),
+            criadoEm: nowIso(),
+          },
+        ],
+      }));
+      return;
+    }
+
+    await addDoc(collection(db, 'couples', coupleId, 'mural'), {
+      ...item,
+      ...actorMeta(),
+      criadoEm: serverTimestamp(),
+    });
+  }
+
+  async function updateMuralItem(id, updates) {
+    if (isDemoMode) {
+      updateDemoState(state => ({
+        ...state,
+        mural: (state.mural || []).map(item =>
+          item.id === id ? { ...item, ...updates, atualizadoEm: nowIso() } : item,
+        ),
+      }));
+      return;
+    }
+
+    await updateDoc(doc(db, 'couples', coupleId, 'mural', id), {
+      ...updates,
+      atualizadoEm: serverTimestamp(),
+    });
+  }
+
+  async function removeMuralItem(id) {
+    if (isDemoMode) {
+      updateDemoState(state => ({
+        ...state,
+        mural: (state.mural || []).filter(item => item.id !== id),
+      }));
+      return;
+    }
+
+    await deleteDoc(doc(db, 'couples', coupleId, 'mural', id));
+  }
+
   async function addCustomTag(tag) {
     const normalizedTag = normalizeCustomTag(tag);
     if (!normalizedTag) return;
@@ -974,6 +1037,7 @@ export function CoupleProvider({ children }) {
         album: [],
         timeline: [],
         phrases: [],
+        mural: [],
         config: {
           ...state.config,
           couplePhotoHeight: null,
@@ -992,6 +1056,7 @@ export function CoupleProvider({ children }) {
     const albumSnap = await getDocs(collection(db, 'couples', coupleId, 'album'));
     const timelineSnap = await getDocs(collection(db, 'couples', coupleId, 'timeline'));
     const phrasesSnap = await getDocs(collection(db, 'couples', coupleId, 'phrases'));
+    const muralSnap = await getDocs(collection(db, 'couples', coupleId, 'mural'));
 
     await Promise.all([
       ...albumSnap.docs.map(item => safeDeleteStorage([item.data().storagePath, item.data().thumbStoragePath])),
@@ -1001,7 +1066,7 @@ export function CoupleProvider({ children }) {
 
     const batch = writeBatch(db);
 
-    [...entriesSnap.docs, ...albumSnap.docs, ...timelineSnap.docs, ...phrasesSnap.docs].forEach(item => {
+    [...entriesSnap.docs, ...albumSnap.docs, ...timelineSnap.docs, ...phrasesSnap.docs, ...muralSnap.docs].forEach(item => {
       batch.delete(item.ref);
     });
 
@@ -1096,6 +1161,20 @@ export function CoupleProvider({ children }) {
     [phrases, featureReady.phrases, featureLoading.phrases, ensurePhrasesLoaded],
   );
 
+  const muralValue = useMemo(
+    () => ({
+      mural,
+      muralReady: featureReady.mural,
+      muralLoading: featureLoading.mural,
+      ensureMuralLoaded,
+      addMuralItem,
+      updateMuralItem,
+      removeMuralItem,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [mural, featureReady.mural, featureLoading.mural, ensureMuralLoaded],
+  );
+
   const value = {
     coupleId,
     couple,
@@ -1119,11 +1198,15 @@ export function CoupleProvider({ children }) {
     phrases,
     phrasesReady: featureReady.phrases,
     phrasesLoading: featureLoading.phrases,
+    mural,
+    muralReady: featureReady.mural,
+    muralLoading: featureLoading.mural,
     config,
     ensureEntriesLoaded,
     ensureAlbumLoaded,
     ensureTimelineLoaded,
     ensurePhrasesLoaded,
+    ensureMuralLoaded,
     addEntry,
     removeEntry,
     updateEntry,
@@ -1138,6 +1221,9 @@ export function CoupleProvider({ children }) {
     updateMilestone,
     addPhrase,
     removePhrase,
+    addMuralItem,
+    updateMuralItem,
+    removeMuralItem,
     addCustomTag,
     removeCustomTag,
     clearCoupleData,
@@ -1151,7 +1237,9 @@ export function CoupleProvider({ children }) {
             <CoupleAlbumContext.Provider value={albumValue}>
               <CoupleTimelineContext.Provider value={timelineValue}>
                 <CouplePhrasesContext.Provider value={phrasesValue}>
-                  {children}
+                  <CoupleMuralContext.Provider value={muralValue}>
+                    {children}
+                  </CoupleMuralContext.Provider>
                 </CouplePhrasesContext.Provider>
               </CoupleTimelineContext.Provider>
             </CoupleAlbumContext.Provider>
@@ -1196,4 +1284,8 @@ export function useCoupleTimeline() {
 
 export function useCouplePhrases() {
   return useRequiredContext(CouplePhrasesContext, 'useCouplePhrases');
+}
+
+export function useCoupleMural() {
+  return useRequiredContext(CoupleMuralContext, 'useCoupleMural');
 }

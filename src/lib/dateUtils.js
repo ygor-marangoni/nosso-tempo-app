@@ -37,7 +37,7 @@ export function timeBetween(olderDate, newerDate) {
   if (days === 1) return '1 dia depois';
   if (days < 30) return `${days} dias depois`;
 
-  const months = Math.floor(days / 30.44);
+  const months = Math.max(1, Math.round(days / 30.44));
   if (months < 12) return months === 1 ? '1 mês depois' : `${months} meses depois`;
 
   const years = Math.floor(months / 12);

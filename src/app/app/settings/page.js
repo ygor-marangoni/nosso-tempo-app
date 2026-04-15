@@ -451,7 +451,7 @@ export default function SettingsPage() {
         </div>
         <div style={{ marginTop: 18 }}>
           <button className="btn btn-primary btn-sm" onClick={handleSaveNames}>
-            <Check size={14} />
+            <Check size={14} strokeWidth={2.5} />
             Salvar
           </button>
         </div>
@@ -557,7 +557,7 @@ export default function SettingsPage() {
         </div>
         <div style={{ marginTop: 18 }}>
           <button className="btn btn-primary btn-sm" onClick={handleSaveStartDate}>
-            <Check size={14} />
+            <Check size={14} strokeWidth={2.5} />
             Salvar
           </button>
         </div>
@@ -628,7 +628,7 @@ export default function SettingsPage() {
         <div className="invite-panel">
           <div className="invite-panel-top">
             <button className="btn btn-primary btn-sm invite-panel-copy-btn" onClick={handleCopyInvite}>
-              <Copy size={14} />
+              <Copy size={14} strokeWidth={2.5} />
               {copied ? 'Copiado' : 'Copiar Convite'}
             </button>
             <div className="invite-panel-code">{config.inviteCode || '—'}</div>
