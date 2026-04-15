@@ -806,7 +806,7 @@ function TimelineFeature({ onShowToast }) {
                     <div className="page-header lpf-timeline-head">
                       <h1>Nossa Linha do Tempo</h1>
                       <p>
-                        <Milestone size={14} color="var(--rosa-400)" /> Clique nos cards para reviver cada capítulo dessa história
+                        <Milestone size={14} color="var(--rosa-400)" /> Veja os cards para reviver cada capítulo dessa história
                       </p>
                     </div>
 
@@ -1167,7 +1167,7 @@ function MuralFeature({ onShowToast }) {
 
   return (
     <>
-      {detailItem && !formOpen && (
+      {detailItem && (
         <MuralDetailModal item={detailItem} onClose={() => setDetailItem(null)} />
       )}
 
