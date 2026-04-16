@@ -19,7 +19,7 @@
   --card: #ffffff;
   --text: #3d2233;
   --text-light: #7a5468;
-  --text-muted: #ad8999;
+  --text-muted: #8a6070;
   --border: #f2dae2;
   --radius: 18px;
   --radius-sm: 11px;
@@ -45,7 +45,7 @@ html[data-palette='lavanda'] {
   --card: #ffffff;
   --text: #402733;
   --text-light: #745665;
-  --text-muted: #a48594;
+  --text-muted: #7d6172;
   --border: #f0dde6;
 }
 
@@ -68,7 +68,7 @@ html[data-palette='azul'] {
   --card: #ffffff;
   --text: #382330;
   --text-light: #694e5d;
-  --text-muted: #9a7d8d;
+  --text-muted: #755c6a;
   --border: #ecdce5;
 }
 
@@ -91,7 +91,7 @@ html[data-palette='sage'] {
   --card: #ffffff;
   --text: #3f2a24;
   --text-light: #71554c;
-  --text-muted: #9c7f75;
+  --text-muted: #755d54;
   --border: #efddd6;
 }
 
@@ -114,7 +114,7 @@ html[data-palette='pessego'] {
   --card: #ffffff;
   --text: #402621;
   --text-light: #77524a;
-  --text-muted: #a67c73;
+  --text-muted: #7a5a52;
   --border: #f2ded8;
 }
 
@@ -137,7 +137,7 @@ html[data-palette='neutro'] {
   --card: #ffffff;
   --text: #36242c;
   --text-light: #674b57;
-  --text-muted: #987b87;
+  --text-muted: #725a65;
   --border: #ebdde1;
 }
 

@@ -286,7 +286,7 @@ const demoStats = useMemo(() => {
 
   return (
     <div className="lp">
-      <header className={`lp-nav${navScrolled ? ' lp-nav--scrolled' : ''}`}>
+      <header className={`lp-nav${navScrolled ? ' lp-nav--scrolled' : ''}`} role="banner">
         <div className="lp-nav-inner">
           <Link href="/?landing=1" className="lp-nav-logo" onClick={() => setMenuOpen(false)}>
             <svg className="lp-nav-logo-icon" width="23" height="23" viewBox="0 0 37 37" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -317,7 +317,7 @@ const demoStats = useMemo(() => {
         </div>
 
         {menuOpen && (
-          <div className="lp-mobile-menu" role="dialog" aria-modal="true">
+          <div className="lp-mobile-menu" role="dialog" aria-modal="true" aria-label="Menu de navegação">
             <nav className="lp-mobile-nav">
               {NAV_ITEMS.map(({ id, label, Icon }) => (
                 <button key={id} type="button" className="lp-mobile-link" onClick={() => scrollTo(id)}>
@@ -341,6 +341,7 @@ const demoStats = useMemo(() => {
         )}
       </header>
 
+      <main id="main-content">
       <section className="lp-hero" id="topo">
         {/* Ondas de fundo */}
         <div className="lp-hero-bg" aria-hidden="true">
@@ -396,6 +397,8 @@ const demoStats = useMemo(() => {
               <button
                 key={t.palette}
                 type="button"
+                aria-label={`Selecionar tema ${t.name}`}
+                aria-pressed={activeTheme === t.palette}
                 className={`lp-hero-theme-item${activeTheme === t.palette ? ' lp-hero-theme-item--active' : ''}`}
                 onClick={() => {
                   setActiveTheme(t.palette);
@@ -860,6 +863,7 @@ const demoStats = useMemo(() => {
         </div>
         </footer>
       </div>
+      </main>
     </div>
   );
 }

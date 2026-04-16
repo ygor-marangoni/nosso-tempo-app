@@ -91,9 +91,9 @@ function TCard({ couple, initials, text, time }) {
           <span className="lp-tcard__name">{couple}</span>
           <span className="lp-tcard__time">{time}</span>
         </div>
-        <div className="lp-tcard__hearts" aria-label="5 estrelas">
+        <div className="lp-tcard__hearts" role="img" aria-label="Avaliação: 5 de 5 estrelas">
           {[0, 1, 2, 3, 4].map(i => (
-            <Heart key={i} size={13} fill="currentColor" stroke="none" />
+            <Heart key={i} size={13} fill="currentColor" stroke="none" aria-hidden="true" />
           ))}
         </div>
       </div>

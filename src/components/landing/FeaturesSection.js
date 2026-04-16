@@ -169,7 +169,7 @@ function ModalShell({ children, onClose }) {
   if (typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="lpf-modal-overlay" onMouseDown={event => event.target === event.currentTarget && onClose()}>
+    <div className="lpf-modal-overlay" role="dialog" aria-modal="true" onMouseDown={event => event.target === event.currentTarget && onClose()}>
       {children}
     </div>,
     document.body
@@ -387,27 +387,30 @@ function RegisterFeature({ onShowToast }) {
                     </label>
                     <div className="preset-tags">
                       {tags.map(tag => (
-                        <span
+                        <button
                           key={tag}
+                          type="button"
                           className={`tag${selectedTags.includes(tag) ? ' selected' : ''}`}
                           onClick={() => toggleTag(tag)}
+                          aria-pressed={selectedTags.includes(tag)}
                         >
-                          <span className="tag-icon">
+                          <span className="tag-icon" aria-hidden="true">
                             <LucideIcon name={tagIcon(tag, customTags)} size={13} />
                           </span>
                           <span>{tag}</span>
-                        </span>
+                        </button>
                       ))}
                     </div>
 
                     <div className="icon-picker-area lpf-icon-picker-area" ref={iconPickerRef}>
                       <div className="tag-input-row">
-                        <button className={`icon-picker-btn${iconPickerOpen ? ' active' : ''}`} type="button" onClick={() => setIconPickerOpen(open => !open)}>
-                          <LucideIcon name={selectedIcon} size={16} />
+                        <button className={`icon-picker-btn${iconPickerOpen ? ' active' : ''}`} type="button" onClick={() => setIconPickerOpen(open => !open)} aria-label="Escolher ícone para atividade" aria-expanded={iconPickerOpen} aria-haspopup="true">
+                          <LucideIcon name={selectedIcon} size={16} aria-hidden="true" />
                         </button>
                         <input
                           type="text"
                           placeholder="Nova atividade..."
+                          aria-label="Nome da nova atividade"
                           value={customActivity}
                           onChange={event => setCustomActivity(event.target.value)}
                           onKeyDown={event => {
@@ -431,13 +434,15 @@ function RegisterFeature({ onShowToast }) {
                               <button
                                 key={icon}
                                 type="button"
+                                aria-label={icon}
+                                aria-pressed={selectedIcon === icon}
                                 className={`icon-option${selectedIcon === icon ? ' selected' : ''}`}
                                 onClick={() => {
                                   setSelectedIcon(icon);
                                   setIconPickerOpen(false);
                                 }}
                               >
-                                <LucideIcon name={icon} size={18} />
+                                <LucideIcon name={icon} size={18} aria-hidden="true" />
                               </button>
                             ))}
                           </div>
@@ -536,7 +541,7 @@ function AlbumFeature({ onShowToast }) {
                         { id: 'mes', label: 'Este Mês' },
                         { id: 'ano', label: 'Este Ano' },
                       ].map(item => (
-                        <button key={item.id} type="button" className={`lpf-filter-pill${filter === item.id ? ' is-active' : ''}`} onClick={() => setFilter(item.id)}>
+                        <button key={item.id} type="button" aria-pressed={filter === item.id} className={`lpf-filter-pill${filter === item.id ? ' is-active' : ''}`} onClick={() => setFilter(item.id)}>
                           {item.label}
                         </button>
                       ))}
@@ -549,6 +554,7 @@ function AlbumFeature({ onShowToast }) {
                       <button
                         key={photo.id}
                         type="button"
+                        aria-label={`Ver foto: ${photo.caption}`}
                         className="lpf-album-card"
                         onClick={() =>
                           setLightboxItem({
@@ -663,6 +669,7 @@ function TimelineFeature({ onShowToast }) {
                               role="button"
                               tabIndex={0}
                               aria-expanded={isActive}
+                              aria-label={item.title}
                               onClick={() => setExpandedId(isActive ? null : item.id)}
                               onKeyDown={e => {
                                 if (e.key === 'Enter' || e.key === ' ') {
