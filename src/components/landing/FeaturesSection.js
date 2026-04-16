@@ -50,12 +50,12 @@ const REGISTER_TAGS = [
 const REGISTER_INITIAL = ['Chamego', 'Assistir série'];
 
 const ALBUM_PHOTOS = [
-  { id: 'album-1', src: 'https://picsum.photos/seed/nt-album-1/400/300', caption: 'Nosso pôr do sol', date: '2026-03-15', addedBy: 'Julianne' },
-  { id: 'album-2', src: 'https://picsum.photos/seed/nt-album-2/400/300', caption: 'Jantar especial', date: '2026-03-22', addedBy: 'Julianne' },
-  { id: 'album-3', src: 'https://picsum.photos/seed/nt-album-3/400/300', caption: 'Primeira selfie', date: '2026-03-26', addedBy: 'Ygor' },
-  { id: 'album-4', src: 'https://picsum.photos/seed/nt-album-4/400/300', caption: 'Viagem à praia', date: '2026-04-02', addedBy: 'Ygor' },
-  { id: 'album-5', src: 'https://picsum.photos/seed/nt-album-5/400/300', caption: 'Cozinhando juntos', date: '2026-04-05', addedBy: 'Julianne' },
-  { id: 'album-6', src: 'https://picsum.photos/seed/nt-album-6/400/300', caption: 'Noite de cinema', date: '2026-04-08', addedBy: 'Ygor' },
+  { id: 'album-1', src: 'https://picsum.photos/seed/nt-album-1/900/680', caption: 'Nosso pôr do sol', date: '2026-03-15', addedBy: 'Julianne' },
+  { id: 'album-2', src: 'https://picsum.photos/seed/nt-album-2/900/680', caption: 'Jantar especial', date: '2026-03-22', addedBy: 'Julianne' },
+  { id: 'album-3', src: 'https://picsum.photos/seed/nt-album-3/900/680', caption: 'Primeira selfie', date: '2026-03-26', addedBy: 'Ygor' },
+  { id: 'album-4', src: 'https://picsum.photos/seed/nt-album-4/900/680', caption: 'Viagem à praia', date: '2026-04-02', addedBy: 'Ygor' },
+  { id: 'album-5', src: 'https://picsum.photos/seed/nt-album-5/900/680', caption: 'Cozinhando juntos', date: '2026-04-05', addedBy: 'Julianne' },
+  { id: 'album-6', src: 'https://picsum.photos/seed/nt-album-6/900/680', caption: 'Noite de cinema', date: '2026-04-08', addedBy: 'Ygor' },
 ];
 
 const TIMELINE_ITEMS = [
@@ -564,7 +564,7 @@ function AlbumFeature({ onShowToast }) {
                           })
                         }
                       >
-                        <img src={photo.src} alt={photo.caption} className="lpf-album-image" loading="lazy" decoding="async" width={400} height={300} />
+                        <img src={photo.src} alt={photo.caption} className="lpf-album-image" />
                         <div className="lpf-album-body">
                           <strong>{photo.caption}</strong>
                           <span>{formatShortDate(photo.date)}</span>
@@ -859,8 +859,6 @@ function TimelineFeature({ onShowToast }) {
                                         alt={item.title}
                                         loading="lazy"
                                         decoding="async"
-                                        width={400}
-                                        height={300}
                                         onClick={event => {
                                           event.stopPropagation();
                                           setLightboxItem({
