@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import CompareAfterIllustration from '@/components/landing/CompareAfterIllustration';
-import FeaturesSection from '@/components/landing/FeaturesSection';
 import HowStepArtwork from '@/components/landing/HowStepArtwork';
-import TestimonialsSection from '@/components/landing/TestimonialsSection';
+
+const FeaturesSection = dynamic(() => import('@/components/landing/FeaturesSection'), { ssr: false });
+const TestimonialsSection = dynamic(() => import('@/components/landing/TestimonialsSection'), { ssr: false });
 import {
   ArrowDownToLine,
   BarChart3,

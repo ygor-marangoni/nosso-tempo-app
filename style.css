@@ -2114,7 +2114,8 @@ input:focus, select:focus, textarea:focus {
   background: var(--rosa-500);
   border: 3px solid var(--card);
   border-radius: 50%;
-  box-shadow: 0 0 0 2px var(--rosa-300);
+  outline: 2px solid var(--rosa-300);
+  outline-offset: 0px;
   flex-shrink: 0;
 }
 
@@ -2123,8 +2124,8 @@ input:focus, select:focus, textarea:focus {
 }
 
 @keyframes dotPulse {
-  0%, 100% { box-shadow: 0 0 0 2px var(--rosa-300); }
-  50% { box-shadow: 0 0 0 7px var(--accent-ring), 0 0 0 2px var(--rosa-300); }
+  0%, 100% { outline: 2px solid var(--rosa-300); outline-offset: 0px; }
+  50% { outline: 2px solid var(--rosa-300); outline-offset: 4px; }
 }
 
 .tl-dot-first {

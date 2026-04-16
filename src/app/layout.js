@@ -73,6 +73,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://nosso-tempo-af8ed.firebaseapp.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://apis.google.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://fastly.picsum.photos" />
         {/* Aplica o tema salvo antes do React montar — evita flash no loading screen */}
         <script
           dangerouslySetInnerHTML={{
