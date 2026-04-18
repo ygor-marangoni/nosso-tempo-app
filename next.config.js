@@ -4,6 +4,7 @@ const isDev = process.env.NODE_ENV === 'development';
 const nextConfig = {
   distDir: isDev ? '.next-dev' : '.next',
   compress: true,
+  devIndicators: false,
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },

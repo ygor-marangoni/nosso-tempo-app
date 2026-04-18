@@ -5037,6 +5037,7 @@ span.member-you {
   z-index: 220;
   border-bottom: 1px solid transparent;
   transition: background 220ms ease, border-color 220ms ease, backdrop-filter 220ms ease;
+  backdrop-filter: blur(14px);
 }
 
 .lp-nav--scrolled {

@@ -50,12 +50,12 @@ const REGISTER_TAGS = [
 const REGISTER_INITIAL = ['Chamego', 'Assistir série'];
 
 const ALBUM_PHOTOS = [
-  { id: 'album-1', src: 'https://picsum.photos/seed/nt-album-1/900/680', caption: 'Nosso pôr do sol', date: '2026-03-15', addedBy: 'Julianne' },
-  { id: 'album-2', src: 'https://picsum.photos/seed/nt-album-2/900/680', caption: 'Jantar especial', date: '2026-03-22', addedBy: 'Julianne' },
-  { id: 'album-3', src: 'https://picsum.photos/seed/nt-album-3/900/680', caption: 'Primeira selfie', date: '2026-03-26', addedBy: 'Ygor' },
-  { id: 'album-4', src: 'https://picsum.photos/seed/nt-album-4/900/680', caption: 'Viagem à praia', date: '2026-04-02', addedBy: 'Ygor' },
-  { id: 'album-5', src: 'https://picsum.photos/seed/nt-album-5/900/680', caption: 'Cozinhando juntos', date: '2026-04-05', addedBy: 'Julianne' },
-  { id: 'album-6', src: 'https://picsum.photos/seed/nt-album-6/900/680', caption: 'Noite de cinema', date: '2026-04-08', addedBy: 'Ygor' },
+  { id: 'album-1', src: '/por-do-sol.webp', caption: 'Nosso pôr do sol', date: '2026-03-15', addedBy: 'Julianne' },
+  { id: 'album-2', src: '/jartar-romantico.webp', caption: 'Jantar especial', date: '2026-03-22', addedBy: 'Julianne' },
+  { id: 'album-3', src: '/sielfie.webp', caption: 'Primeira selfie', date: '2026-03-26', addedBy: 'Ygor' },
+  { id: 'album-4', src: '/foto-na-praia.webp', caption: 'Viagem à praia', date: '2026-04-02', addedBy: 'Ygor' },
+  { id: 'album-5', src: '/cozinhando-juntos.webp', caption: 'Cozinhando juntos', date: '2026-04-05', addedBy: 'Julianne' },
+  { id: 'album-6', src: '/cineminha.webp', caption: 'Noite de cinema', date: '2026-04-08', addedBy: 'Ygor' },
 ];
 
 const TIMELINE_ITEMS = [

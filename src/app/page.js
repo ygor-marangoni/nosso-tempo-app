@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -193,7 +193,7 @@ export default function LandingPage() {
   const { user, loading: authLoading } = useAuth();
   const { coupleId, coupleLoading } = useCoupleMeta();
 
-  const [navScrolled, setNavScrolled] = useState(false);
+  const navRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
   const [activeTheme, setActiveTheme] = useState('rosa');
@@ -226,9 +226,33 @@ const demoStats = useMemo(() => {
   }, [authLoading, coupleId, coupleLoading, router, user]);
 
   useEffect(() => {
-    const onScroll = () => setNavScrolled(window.scrollY > 18);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    if (typeof window === 'undefined') return undefined;
+
+    let frameId = 0;
+
+    const getScrollTop = () => window.scrollY || document.documentElement.scrollTop || 0;
+    const getThreshold = () => (window.innerWidth <= 1000 ? 4 : 18);
+
+    const updateScrolled = () => {
+      frameId = 0;
+      const shouldBeScrolled = getScrollTop() > getThreshold();
+      navRef.current?.classList.toggle('lp-nav--scrolled', shouldBeScrolled);
+    };
+
+    const queueUpdate = () => {
+      if (frameId) return;
+      frameId = window.requestAnimationFrame(updateScrolled);
+    };
+
+    updateScrolled();
+    window.addEventListener('scroll', queueUpdate, { passive: true });
+    window.addEventListener('resize', queueUpdate);
+
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      window.removeEventListener('scroll', queueUpdate);
+      window.removeEventListener('resize', queueUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -288,7 +312,7 @@ const demoStats = useMemo(() => {
 
   return (
     <div className="lp">
-      <header className={`lp-nav${navScrolled ? ' lp-nav--scrolled' : ''}`} role="banner">
+      <header ref={navRef} className="lp-nav" role="banner">
         <div className="lp-nav-inner">
           <Link href="/?landing=1" className="lp-nav-logo" onClick={() => setMenuOpen(false)}>
             <svg className="lp-nav-logo-icon" width="23" height="23" viewBox="0 0 37 37" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
