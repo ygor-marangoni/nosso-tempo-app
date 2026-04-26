@@ -8482,6 +8482,7 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
   overflow: visible;
   cursor: grab;
   will-change: left, top, transform;
+  backface-visibility: hidden;
 }
 
 .postit::before {
@@ -8515,6 +8516,10 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
   touch-action: none;
   user-select: none;
   box-shadow: none;
+}
+
+.postit.is-dragging:hover {
+  transform: rotate(var(--postit-rotation)) !important;
 }
 
 .postit-pin {
@@ -8591,6 +8596,33 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.postit-reaction-btn {
+  padding: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: transform 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+
+.postit-reaction-btn:hover {
+  transform: scale(1.08);
+  color: var(--postit-border);
+}
+
+.postit-reaction-btn.is-liked {
+  color: var(--postit-border);
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.postit-reaction-btn.is-liked svg {
+  animation: postitHeartPop 0.34s ease;
+}
+
+@keyframes postitHeartPop {
+  0% { transform: scale(0.74); }
+  58% { transform: scale(1.24); }
+  100% { transform: scale(1); }
 }
 
 .postit-titulo {
@@ -8797,6 +8829,21 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
   flex-shrink: 0;
 }
 
+.mural-detail-reaction-btn {
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.mural-detail-reaction-btn:hover {
+  transform: scale(1.08);
+}
+
+.mural-detail-reaction-btn.is-liked svg {
+  animation: postitHeartPop 0.34s ease;
+}
+
 .mural-detail-type {
   font-size: 11px;
   font-weight: 700;
@@ -8965,6 +9012,54 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
 .mural-detail-modal .modal-close:hover {
   background: rgba(0, 0, 0, 0.08);
   color: inherit;
+}
+
+.mural-romance-burst {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  pointer-events: none;
+}
+
+.mural-romance-heart {
+  position: absolute;
+  top: var(--mural-burst-y);
+  left: var(--mural-burst-x);
+  color: var(--rosa-400);
+  opacity: 0;
+  filter: drop-shadow(0 10px 18px rgba(219, 90, 150, 0.18));
+  transform: translate(-50%, -50%) scale(0.42) rotate(0deg);
+  animation: muralRomanceHeart 0.9s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  animation-delay: var(--mural-heart-delay);
+}
+
+@keyframes muralRomanceHeart {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.42) rotate(0deg);
+  }
+  18% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform:
+      translate(calc(-50% + var(--mural-heart-x)), calc(-50% + var(--mural-heart-y)))
+      scale(var(--mural-heart-scale))
+      rotate(var(--mural-heart-rotate));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .postit-reaction-btn.is-liked svg,
+  .mural-detail-reaction-btn.is-liked svg,
+  .mural-romance-heart {
+    animation: none;
+  }
+
+  .mural-romance-burst {
+    display: none;
+  }
 }
 
 /* ─── Empty state ───────────────────────────────────────────── */

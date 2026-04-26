@@ -5,6 +5,8 @@ import { useAuth } from './AuthContext';
 import { db } from '@/lib/firebase';
 import {
   addDoc,
+  arrayRemove,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -973,6 +975,36 @@ export function CoupleProvider({ children }) {
     });
   }
 
+  async function toggleMuralReaction(id, shouldReact) {
+    if (!user?.uid) return;
+
+    if (isDemoMode) {
+      updateDemoState(state => ({
+        ...state,
+        mural: (state.mural || []).map(item => {
+          if (item.id !== id) return item;
+
+          const curtidoPor = Array.isArray(item.curtidoPor) ? item.curtidoPor : [];
+          const nextCurtidoPor = shouldReact
+            ? Array.from(new Set([...curtidoPor, user.uid]))
+            : curtidoPor.filter(uid => uid !== user.uid);
+
+          return {
+            ...item,
+            curtidoPor: nextCurtidoPor,
+            atualizadoEm: nowIso(),
+          };
+        }),
+      }));
+      return;
+    }
+
+    await updateDoc(doc(db, 'couples', coupleId, 'mural', id), {
+      curtidoPor: shouldReact ? arrayUnion(user.uid) : arrayRemove(user.uid),
+      atualizadoEm: serverTimestamp(),
+    });
+  }
+
   async function removeMuralItem(id) {
     if (isDemoMode) {
       updateDemoState(state => ({
@@ -1169,6 +1201,7 @@ export function CoupleProvider({ children }) {
       ensureMuralLoaded,
       addMuralItem,
       updateMuralItem,
+      toggleMuralReaction,
       removeMuralItem,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1223,6 +1256,7 @@ export function CoupleProvider({ children }) {
     removePhrase,
     addMuralItem,
     updateMuralItem,
+    toggleMuralReaction,
     removeMuralItem,
     addCustomTag,
     removeCustomTag,
