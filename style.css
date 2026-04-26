@@ -5380,13 +5380,26 @@ span.member-you {
   align-items: center;
   min-height: 90dvh;
   padding: 140px 24px 80px;
-  overflow: hidden;
+  overflow: visible;
+  background: var(--rosa-50);
+}
+
+.lp-hero::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 76px;
+  background: var(--rosa-50);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Ondas SVG de fundo */
 .lp-hero-bg {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   pointer-events: none;
   z-index: 0;
 }
@@ -5407,7 +5420,7 @@ span.member-you {
   left: 0;
   width: 100%;
   height: 10px;
-  background: linear-gradient(to top, var(--bg), transparent);
+  background: linear-gradient(to top, var(--rosa-50), transparent);
 }
 
 /* Copy */
@@ -5479,7 +5492,7 @@ span.member-you {
 /* Visual */
 .lp-hero-visual {
   position: relative;
-  z-index: 1;
+  z-index: 4;
   margin-top: 80px;
   width: 100%;
   max-width: 900px;
@@ -5491,7 +5504,7 @@ span.member-you {
 /* Mockup phone */
 .lp-hero-phone {
   position: relative;
-  z-index: 2;
+  z-index: 5;
   flex-shrink: 0;
   margin-bottom: 40px;
 }
@@ -5500,7 +5513,9 @@ span.member-you {
   display: block;
   width: 280px;
   height: auto;
-  filter: drop-shadow(0 24px 48px rgba(0,0,0,0.12));
+  filter:
+    drop-shadow(0 8px 14px rgba(61, 34, 51, 0.035))
+    drop-shadow(0 24px 34px rgba(61, 34, 51, 0.045));
 }
 
 /* Card tema (esquerda) */
@@ -5726,6 +5741,21 @@ span.member-you {
 }
 .lp-divider--to-compare .lp-divider-wave {
   fill: var(--compare-section-bg);
+  opacity: 1;
+}
+
+.lp-divider--hero-to-compare {
+  --hero-compare-section-bg: color-mix(in srgb, var(--rosa-200) 45%, var(--bg) 55%);
+  position: relative;
+  z-index: 1;
+  background: var(--rosa-50);
+  box-shadow: 0 -32px 0 0 var(--rosa-50);
+}
+.lp-divider--hero-to-compare .lp-divider-bg {
+  fill: var(--rosa-50);
+}
+.lp-divider--hero-to-compare .lp-divider-wave {
+  fill: var(--hero-compare-section-bg);
   opacity: 1;
 }
 
@@ -5956,7 +5986,7 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
 
 /* ── COMPARAÇÃO ──────────────────────────────────────────────── */
 .lp-compare-section {
-  background: color-mix(in srgb, var(--rosa-200) 45%, transparent);
+  background: color-mix(in srgb, var(--rosa-200) 45%, var(--bg) 55%);
 }
 
 .lp-compare-title {

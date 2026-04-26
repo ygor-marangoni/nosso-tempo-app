@@ -484,7 +484,7 @@ const demoStats = useMemo(() => {
         </div>
       </section>
 
-      <div className="lp-divider" aria-hidden="true">
+      <div className="lp-divider lp-divider--hero-to-compare" aria-hidden="true">
         <svg viewBox="0 0 1440 48" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="0" y="0" width="1440" height="48" className="lp-divider-bg" />
           <path d="M0,24 C240,48 480,0 720,24 C960,48 1200,0 1440,24 L1440,48 L0,48 Z" className="lp-divider-wave" />
