@@ -588,14 +588,18 @@ function RomanceReactionBurst({ origin, source = 'postit' }) {
   const isFullscreen = source === 'detail';
   const hearts = isFullscreen
     ? [
-      { x: '0px', y: '0px', r: '-8deg', s: '2.45', d: '0ms', size: 72, featured: true },
-      { x: '-188px', y: '-96px', r: '-28deg', s: '1.2', d: '40ms', size: 34 },
-      { x: '-112px', y: '-184px', r: '18deg', s: '1.45', d: '10ms', size: 38 },
-      { x: '-24px', y: '-220px', r: '-10deg', s: '1.28', d: '80ms', size: 32 },
-      { x: '108px', y: '-176px', r: '24deg', s: '1.38', d: '55ms', size: 36 },
-      { x: '194px', y: '-76px', r: '-16deg', s: '1.1', d: '90ms', size: 30 },
-      { x: '-154px', y: '42px', r: '16deg', s: '0.98', d: '130ms', size: 28 },
-      { x: '148px', y: '34px', r: '-22deg', s: '1.04', d: '120ms', size: 28 },
+      { x: '0px', y: '-8px', r: '-6deg', s: '2.05', d: '0ms', size: 74, opacity: '1', featured: true },
+      { x: '-156px', y: '-94px', r: '-18deg', s: '1.06', d: '18ms', size: 34, opacity: '0.78' },
+      { x: '-92px', y: '-156px', r: '12deg', s: '0.94', d: '32ms', size: 30, opacity: '0.66' },
+      { x: '0px', y: '-184px', r: '-4deg', s: '0.86', d: '44ms', size: 28, opacity: '0.54' },
+      { x: '92px', y: '-156px', r: '-12deg', s: '0.94', d: '32ms', size: 30, opacity: '0.66' },
+      { x: '156px', y: '-94px', r: '18deg', s: '1.06', d: '18ms', size: 34, opacity: '0.78' },
+      { x: '-210px', y: '-26px', r: '-24deg', s: '0.74', d: '64ms', size: 24, opacity: '0.42' },
+      { x: '-132px', y: '34px', r: '14deg', s: '0.64', d: '82ms', size: 22, opacity: '0.34' },
+      { x: '132px', y: '34px', r: '-14deg', s: '0.64', d: '82ms', size: 22, opacity: '0.34' },
+      { x: '210px', y: '-26px', r: '24deg', s: '0.74', d: '64ms', size: 24, opacity: '0.42' },
+      { x: '-204px', y: '-150px', r: '22deg', s: '0.58', d: '92ms', size: 20, opacity: '0.28' },
+      { x: '204px', y: '-150px', r: '-22deg', s: '0.58', d: '92ms', size: 20, opacity: '0.28' },
     ]
     : [
       { x: '-88px', y: '-34px', r: '-24deg', s: '0.72', d: '0ms', size: 30 },
@@ -607,31 +611,34 @@ function RomanceReactionBurst({ origin, source = 'postit' }) {
     ];
 
   return (
-    <div
-      className={`mural-romance-burst${isFullscreen ? ' mural-romance-burst--fullscreen' : ''}`}
-      style={{
-        '--mural-burst-x': `${origin?.x ?? 0}px`,
-        '--mural-burst-y': `${origin?.y ?? 0}px`,
-      }}
-      aria-hidden="true"
-    >
-      {hearts.map((heart, index) => (
-        <Heart
-          key={index}
-          className={`mural-romance-heart${heart.featured ? ' mural-romance-heart--featured' : ''}`}
-          size={heart.size}
-          fill="currentColor"
-          strokeWidth={2.2}
-          style={{
-            '--mural-heart-x': heart.x,
-            '--mural-heart-y': heart.y,
-            '--mural-heart-rotate': heart.r,
-            '--mural-heart-scale': heart.s,
-            '--mural-heart-delay': heart.d,
-          }}
-        />
-      ))}
-    </div>
+    <LayerPortal>
+      <div
+        className={`mural-romance-burst${isFullscreen ? ' mural-romance-burst--fullscreen' : ''}`}
+        style={{
+          '--mural-burst-x': `${origin?.x ?? 0}px`,
+          '--mural-burst-y': `${origin?.y ?? 0}px`,
+        }}
+        aria-hidden="true"
+      >
+        {hearts.map((heart, index) => (
+          <Heart
+            key={index}
+            className={`mural-romance-heart${heart.featured ? ' mural-romance-heart--featured' : ''}`}
+            size={heart.size}
+            fill="currentColor"
+            strokeWidth={2.2}
+            style={{
+              '--mural-heart-x': heart.x,
+              '--mural-heart-y': heart.y,
+              '--mural-heart-rotate': heart.r,
+              '--mural-heart-scale': heart.s,
+              '--mural-heart-delay': heart.d,
+              '--mural-heart-opacity': heart.opacity || '0.95',
+            }}
+          />
+        ))}
+      </div>
+    </LayerPortal>
   );
 }
 
@@ -715,7 +722,7 @@ export default function MuralPage() {
     reactionTimerRef.current = setTimeout(() => {
       setReactionBurst(null);
       reactionTimerRef.current = null;
-    }, source === 'detail' ? 1180 : 1000);
+    }, source === 'detail' ? 1280 : 1000);
   }, []);
 
   const triggerReactionPulse = useCallback((itemId, source) => {
