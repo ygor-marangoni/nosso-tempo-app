@@ -8615,8 +8615,17 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
   background: rgba(255, 255, 255, 0.58);
 }
 
-.postit-reaction-btn.is-liked svg {
+.postit-reaction-btn.is-reacting svg {
   animation: postitHeartPop 0.34s ease;
+}
+
+.postit-reaction-btn:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+.postit-reaction-btn:disabled:hover {
+  transform: none;
 }
 
 @keyframes postitHeartPop {
@@ -8840,8 +8849,16 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
   transform: scale(1.08);
 }
 
-.mural-detail-reaction-btn.is-liked svg {
+.mural-detail-reaction-btn.is-reacting svg {
   animation: postitHeartPop 0.34s ease;
+}
+
+.mural-detail-reaction-btn:disabled {
+  cursor: default;
+}
+
+.mural-detail-reaction-btn:disabled:hover {
+  transform: none;
 }
 
 .mural-detail-type {
@@ -9033,6 +9050,19 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
   animation-delay: var(--mural-heart-delay);
 }
 
+.mural-romance-burst--fullscreen .mural-romance-heart {
+  color: var(--rosa-500);
+  filter:
+    drop-shadow(0 16px 26px rgba(219, 90, 150, 0.26))
+    drop-shadow(0 0 18px rgba(255, 255, 255, 0.52));
+  animation-duration: 1.08s;
+}
+
+.mural-romance-heart--featured {
+  animation: muralRomanceCenterHeart 0.86s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: var(--mural-heart-delay);
+}
+
 @keyframes muralRomanceHeart {
   0% {
     opacity: 0;
@@ -9050,9 +9080,31 @@ html[data-palette='pessego'] .lp-divider--to-footer-cta .lp-divider-bg {
   }
 }
 
+@keyframes muralRomanceCenterHeart {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(-8deg);
+  }
+  16% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.72) rotate(-8deg);
+  }
+  38% {
+    transform: translate(-50%, -50%) scale(1.28) rotate(6deg);
+  }
+  66% {
+    opacity: 0.94;
+    transform: translate(-50%, -50%) scale(1.46) rotate(-3deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.24) rotate(10deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .postit-reaction-btn.is-liked svg,
-  .mural-detail-reaction-btn.is-liked svg,
+  .postit-reaction-btn.is-reacting svg,
+  .mural-detail-reaction-btn.is-reacting svg,
   .mural-romance-heart {
     animation: none;
   }

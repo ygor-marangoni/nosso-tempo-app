@@ -975,8 +975,11 @@ export function CoupleProvider({ children }) {
     });
   }
 
-  async function toggleMuralReaction(id, shouldReact) {
+  async function toggleMuralReaction(id, shouldReact, itemSnapshot = null) {
     if (!user?.uid) return;
+
+    const targetItem = itemSnapshot || (mural || []).find(item => item.id === id);
+    if (targetItem?.tipo === 'recado' && targetItem.createdBy === user.uid) return;
 
     if (isDemoMode) {
       updateDemoState(state => ({

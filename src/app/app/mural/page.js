@@ -248,7 +248,17 @@ function MuralForm({ tipo, editItem, partnerName, onClose, onSave }) {
 
 // ─── Modal de detalhes do post-it ────────────────────────────────────────────
 
-function MuralDetailModal({ item, myUid, isLiked = false, onReaction, onClose, onEdit, onDelete }) {
+function MuralDetailModal({
+  item,
+  myUid,
+  isLiked = false,
+  canReact = true,
+  isReacting = false,
+  onReaction,
+  onClose,
+  onEdit,
+  onDelete,
+}) {
   const overlayRef = useRef(null);
   const colorObj = getColor(item.cor);
   const isOwner = item.createdBy === myUid;
@@ -289,10 +299,11 @@ function MuralDetailModal({ item, myUid, isLiked = false, onReaction, onClose, o
               ) : (
                 <button
                   type="button"
-                  className={`mural-detail-icon-badge mural-detail-reaction-btn${isLiked ? ' is-liked' : ''}`}
+                  className={`mural-detail-icon-badge mural-detail-reaction-btn${isLiked ? ' is-liked' : ''}${isReacting ? ' is-reacting' : ''}`}
                   style={{ background: '#fff', color: colorObj.border }}
-                  onClick={onReaction}
-                  aria-label={isLiked ? 'Remover curtida do recado' : 'Curtir recado'}
+                  onClick={canReact ? onReaction : undefined}
+                  disabled={!canReact}
+                  aria-label={!canReact ? 'Seu companheiro pode curtir este recado' : (isLiked ? 'Remover curtida do recado' : 'Curtir recado')}
                   aria-pressed={isLiked}
                 >
                   <Heart size={15} color="currentColor" fill={isLiked ? 'currentColor' : 'none'} />
@@ -443,6 +454,15 @@ function isRecadoLikedByUser(item, uid) {
   return Array.isArray(item.curtidoPor) && item.curtidoPor.includes(uid);
 }
 
+function isRecadoLikedByCompanion(item) {
+  if (item?.tipo !== 'recado' || !Array.isArray(item.curtidoPor)) return false;
+  return item.curtidoPor.some(uid => uid && uid !== item.createdBy);
+}
+
+function canReactToRecado(item, uid) {
+  return Boolean(uid && item?.tipo === 'recado' && item.createdBy !== uid);
+}
+
 function withRecadoReaction(item, uid, shouldReact) {
   if (!item || !uid || item.tipo !== 'recado') return item;
 
@@ -465,6 +485,8 @@ function MuralPostIt({
   isDragging = false,
   isViewed = false,
   isLiked = false,
+  canReact = true,
+  isReacting = false,
   style,
 }) {
   const colorObj = getColor(item.cor);
@@ -500,10 +522,11 @@ function MuralPostIt({
       ) : (
         <button
           type="button"
-          className={`postit-type-badge postit-reaction-btn${isLiked ? ' is-liked' : ''}`}
-          onClick={onReaction}
+          className={`postit-type-badge postit-reaction-btn${isLiked ? ' is-liked' : ''}${isReacting ? ' is-reacting' : ''}`}
+          onClick={canReact ? onReaction : undefined}
           onMouseDown={event => event.stopPropagation()}
-          aria-label={isLiked ? 'Remover curtida do recado' : 'Curtir recado'}
+          disabled={!canReact}
+          aria-label={!canReact ? 'Seu companheiro pode curtir este recado' : (isLiked ? 'Remover curtida do recado' : 'Curtir recado')}
           aria-pressed={isLiked}
         >
           <Heart size={11} fill={isLiked ? 'currentColor' : 'none'} />
@@ -530,9 +553,16 @@ function MuralPostIt({
   );
 }
 
-function getReactionOrigin(event) {
+function getReactionOrigin(event, source = 'unknown') {
+  if (source === 'detail' && typeof window !== 'undefined') {
+    return {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+    };
+  }
+
   const target = event?.currentTarget;
-  const originEl = target?.closest?.('.postit') || target;
+  const originEl = target?.closest?.('.mural-detail-modal') || target?.closest?.('.postit') || target;
   if (!originEl?.getBoundingClientRect) return null;
 
   const rect = originEl.getBoundingClientRect();
@@ -542,24 +572,43 @@ function getReactionOrigin(event) {
   };
 }
 
+function getReactionSource(event) {
+  const target = event?.currentTarget;
+  if (target?.closest?.('.mural-detail-modal')) return 'detail';
+  if (target?.closest?.('.postit')) return 'postit';
+  return 'unknown';
+}
+
 function areMuralPositionsClose(a, b) {
   if (!a || !b) return false;
   return Math.abs(a.x - b.x) < 0.05 && Math.abs(a.y - b.y) < 0.05;
 }
 
-function RomanceReactionBurst({ origin }) {
-  const hearts = [
-    { x: '-88px', y: '-34px', r: '-24deg', s: '0.72', d: '0ms' },
-    { x: '-46px', y: '-82px', r: '18deg', s: '0.9', d: '45ms' },
-    { x: '0px', y: '-104px', r: '-6deg', s: '1.08', d: '10ms' },
-    { x: '48px', y: '-78px', r: '22deg', s: '0.82', d: '70ms' },
-    { x: '86px', y: '-30px', r: '-14deg', s: '0.68', d: '30ms' },
-    { x: '-20px', y: '-42px', r: '10deg', s: '0.62', d: '110ms' },
-  ];
+function RomanceReactionBurst({ origin, source = 'postit' }) {
+  const isFullscreen = source === 'detail';
+  const hearts = isFullscreen
+    ? [
+      { x: '0px', y: '0px', r: '-8deg', s: '2.45', d: '0ms', size: 72, featured: true },
+      { x: '-188px', y: '-96px', r: '-28deg', s: '1.2', d: '40ms', size: 34 },
+      { x: '-112px', y: '-184px', r: '18deg', s: '1.45', d: '10ms', size: 38 },
+      { x: '-24px', y: '-220px', r: '-10deg', s: '1.28', d: '80ms', size: 32 },
+      { x: '108px', y: '-176px', r: '24deg', s: '1.38', d: '55ms', size: 36 },
+      { x: '194px', y: '-76px', r: '-16deg', s: '1.1', d: '90ms', size: 30 },
+      { x: '-154px', y: '42px', r: '16deg', s: '0.98', d: '130ms', size: 28 },
+      { x: '148px', y: '34px', r: '-22deg', s: '1.04', d: '120ms', size: 28 },
+    ]
+    : [
+      { x: '-88px', y: '-34px', r: '-24deg', s: '0.72', d: '0ms', size: 30 },
+      { x: '-46px', y: '-82px', r: '18deg', s: '0.9', d: '45ms', size: 30 },
+      { x: '0px', y: '-104px', r: '-6deg', s: '1.08', d: '10ms', size: 30 },
+      { x: '48px', y: '-78px', r: '22deg', s: '0.82', d: '70ms', size: 30 },
+      { x: '86px', y: '-30px', r: '-14deg', s: '0.68', d: '30ms', size: 30 },
+      { x: '-20px', y: '-42px', r: '10deg', s: '0.62', d: '110ms', size: 30 },
+    ];
 
   return (
     <div
-      className="mural-romance-burst"
+      className={`mural-romance-burst${isFullscreen ? ' mural-romance-burst--fullscreen' : ''}`}
       style={{
         '--mural-burst-x': `${origin?.x ?? 0}px`,
         '--mural-burst-y': `${origin?.y ?? 0}px`,
@@ -569,8 +618,8 @@ function RomanceReactionBurst({ origin }) {
       {hearts.map((heart, index) => (
         <Heart
           key={index}
-          className="mural-romance-heart"
-          size={30}
+          className={`mural-romance-heart${heart.featured ? ' mural-romance-heart--featured' : ''}`}
+          size={heart.size}
           fill="currentColor"
           strokeWidth={2.2}
           style={{
@@ -634,6 +683,7 @@ export default function MuralPage() {
   const [editItem, setEditItem] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
   const [reactionBurst, setReactionBurst] = useState(null);
+  const [reactionPulse, setReactionPulse] = useState(null);
   const [dragPositions, setDragPositions] = useState({});
   const boardRef = useRef(null);
   const dragStateRef = useRef(null);
@@ -642,6 +692,7 @@ export default function MuralPage() {
   const pendingDragPositionsRef = useRef({});
   const suppressClickRef = useRef(null);
   const reactionTimerRef = useRef(null);
+  const reactionPulseTimerRef = useRef(null);
 
   useEffect(() => {
     ensureMuralLoaded();
@@ -649,21 +700,32 @@ export default function MuralPage() {
 
   useEffect(() => () => {
     if (reactionTimerRef.current) clearTimeout(reactionTimerRef.current);
+    if (reactionPulseTimerRef.current) clearTimeout(reactionPulseTimerRef.current);
     if (dragFrameRef.current) cancelAnimationFrame(dragFrameRef.current);
   }, []);
 
-  const triggerReactionBurst = useCallback((origin) => {
+  const triggerReactionBurst = useCallback((origin, source = 'postit') => {
     if (reactionTimerRef.current) clearTimeout(reactionTimerRef.current);
 
     const fallbackOrigin = typeof window === 'undefined'
       ? { x: 0, y: 0 }
       : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
-    setReactionBurst({ id: Date.now(), origin: origin || fallbackOrigin });
+    setReactionBurst({ id: Date.now(), origin: origin || fallbackOrigin, source });
     reactionTimerRef.current = setTimeout(() => {
       setReactionBurst(null);
       reactionTimerRef.current = null;
-    }, 1000);
+    }, source === 'detail' ? 1180 : 1000);
+  }, []);
+
+  const triggerReactionPulse = useCallback((itemId, source) => {
+    if (reactionPulseTimerRef.current) clearTimeout(reactionPulseTimerRef.current);
+
+    setReactionPulse({ id: Date.now(), itemId, source });
+    reactionPulseTimerRef.current = setTimeout(() => {
+      setReactionPulse(null);
+      reactionPulseTimerRef.current = null;
+    }, 420);
   }, []);
 
   const partnerName = useMemo(() => {
@@ -802,25 +864,29 @@ export default function MuralPage() {
 
   const handleToggleReaction = useCallback(async (item, event) => {
     event?.stopPropagation();
-    if (!user?.uid || item?.tipo !== 'recado') return;
+    if (!canReactToRecado(item, user?.uid)) return;
 
-    const reactionOrigin = getReactionOrigin(event);
+    const reactionSource = getReactionSource(event);
+    const reactionOrigin = getReactionOrigin(event, reactionSource);
     const nextLiked = !isRecadoLikedByUser(item, user.uid);
     setDetailItem(current => (
       current?.id === item.id ? withRecadoReaction(current, user.uid, nextLiked) : current
     ));
 
-    if (nextLiked) triggerReactionBurst(reactionOrigin);
+    if (nextLiked) {
+      triggerReactionPulse(item.id, reactionSource);
+      triggerReactionBurst(reactionOrigin, reactionSource);
+    }
 
     try {
-      await toggleMuralReaction(item.id, nextLiked);
+      await toggleMuralReaction(item.id, nextLiked, item);
     } catch {
       setDetailItem(current => (
         current?.id === item.id ? withRecadoReaction(current, user.uid, !nextLiked) : current
       ));
       showToast('Nao foi possivel reagir agora.');
     }
-  }, [showToast, toggleMuralReaction, triggerReactionBurst, user?.uid]);
+  }, [showToast, toggleMuralReaction, triggerReactionBurst, triggerReactionPulse, user?.uid]);
 
   const persistDraggedPosition = useCallback(async (itemId, nextPosition, previousPosition) => {
     try {
@@ -1057,7 +1123,9 @@ export default function MuralPage() {
                 onReaction={event => handleToggleReaction(item, event)}
                 isDragging={draggingId === item.id}
                 isViewed={isRecadoViewedByPartner(item)}
-                isLiked={isRecadoLikedByUser(item, user?.uid)}
+                isLiked={isRecadoLikedByCompanion(item)}
+                canReact={canReactToRecado(item, user?.uid)}
+                isReacting={reactionPulse?.itemId === item.id && reactionPulse?.source === 'postit'}
                 style={getDesktopPostItStyle(
                   item,
                   idx,
@@ -1078,7 +1146,9 @@ export default function MuralPage() {
                 onClick={() => handlePostItClick(item)}
                 onReaction={event => handleToggleReaction(item, event)}
                 isViewed={isRecadoViewedByPartner(item)}
-                isLiked={isRecadoLikedByUser(item, user?.uid)}
+                isLiked={isRecadoLikedByCompanion(item)}
+                canReact={canReactToRecado(item, user?.uid)}
+                isReacting={reactionPulse?.itemId === item.id && reactionPulse?.source === 'postit'}
               />
             ))}
           </div>
@@ -1090,7 +1160,9 @@ export default function MuralPage() {
         <MuralDetailModal
           item={detailItem}
           myUid={user?.uid}
-          isLiked={isRecadoLikedByUser(detailItem, user?.uid)}
+          isLiked={isRecadoLikedByCompanion(detailItem)}
+          canReact={canReactToRecado(detailItem, user?.uid)}
+          isReacting={reactionPulse?.itemId === detailItem.id && reactionPulse?.source === 'detail'}
           onReaction={event => handleToggleReaction(detailItem, event)}
           onClose={closeDetail}
           onEdit={handleEditClick}
@@ -1098,7 +1170,13 @@ export default function MuralPage() {
         />
       )}
 
-      {reactionBurst ? <RomanceReactionBurst key={reactionBurst.id} origin={reactionBurst.origin} /> : null}
+      {reactionBurst ? (
+        <RomanceReactionBurst
+          key={reactionBurst.id}
+          origin={reactionBurst.origin}
+          source={reactionBurst.source}
+        />
+      ) : null}
     </div>
   );
 }
