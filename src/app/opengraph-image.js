@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
 export const size = {
   width: 1200,
   height: 630,
@@ -34,7 +33,7 @@ export default function OpenGraphImage() {
           }}
         />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', zIndex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div
             style={{
               width: '18px',
@@ -46,8 +45,8 @@ export default function OpenGraphImage() {
           <div style={{ fontSize: '28px', color: '#d63a6e', fontWeight: 700 }}>Nosso Tempo</div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', zIndex: 1 }}>
-          <div style={{ fontSize: '88px', lineHeight: 0.92, color: '#d63a6e', fontWeight: 700 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '88px', lineHeight: 0.92, color: '#d63a6e', fontWeight: 700 }}>
             Memórias do casal,
             <br />
             no mesmo espaço.
@@ -57,7 +56,7 @@ export default function OpenGraphImage() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '14px', zIndex: 1 }}>
+        <div style={{ display: 'flex', gap: '14px' }}>
           {['Álbum', 'Histórico', 'Linha do Tempo', 'Relatórios'].map(item => (
             <div
               key={item}
