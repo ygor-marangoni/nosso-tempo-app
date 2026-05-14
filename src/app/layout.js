@@ -3,7 +3,7 @@ import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import Providers from '@/components/Providers';
 import '../../style.css';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nosso-tempo.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nosso-tempo-six.vercel.app';
 const faviconVersion = '20260402';
 
 const figtree = Figtree({
@@ -71,7 +71,7 @@ export default function RootLayout({ children }) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://nosso-tempo-af8ed.firebaseapp.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://apis.google.com" crossOrigin="anonymous" />
